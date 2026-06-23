@@ -1,0 +1,43 @@
+name: ConnecTani DevSecOps Pipeline
+
+on:
+  pull_request:
+    branches: [ "develop", "main" ]
+  push:
+    branches: [ "develop", "main" ]
+
+jobs:
+  build-and-qa:
+    name: Integracion Continua & QA
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: 1. Checkout del Codigo Fuente
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+
+    - name: 2. Configurar Node.js (v20)
+      uses: actions/setup-node@v3
+      with:
+        node-version: '20'
+        cache: 'npm'
+
+    - name: 3. Instalar Dependencias del Entorno
+      run: npm ci
+
+    - name: 4. Ejecutar Pruebas Automatizadas (Jest & Cobertura Istanbul)
+      run: npm run test
+
+    - name: 5. Analisis de Calidad de Codigo (SonarCloud)
+      uses: SonarSource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+    - name: 6. Analisis de Seguridad de Dependencias (Snyk SCA)
+      uses: snyk/actions/node@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --severity-threshold=high
