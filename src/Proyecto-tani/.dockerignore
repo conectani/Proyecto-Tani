@@ -1,0 +1,10 @@
+node_modules
+.expo
+coverage
+.git
+.github
+dist
+.vscode
+raw_build_logs_parsed.txt
+AppIcons
+pantallas_html
