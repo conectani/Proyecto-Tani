@@ -16,6 +16,9 @@ import { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
 import { Video, ResizeMode } from 'expo-av';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import NetInfo from '@react-native-community/netinfo';
+import { syncOfflineQueue } from '@/utils/syncManager';
+
 
 SplashScreen.preventAutoHideAsync();
 
@@ -26,6 +29,17 @@ export const unstable_settings = {
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [videoFinished, setVideoFinished] = useState(false);
+
+  useEffect(() => {
+    // Escucha cambios de conexión
+    const desuscribir = NetInfo.addEventListener(state => {
+      if (state.isConnected) {
+        console.log('¡Señal recuperada! Sincronizando datos...');
+        syncOfflineQueue();
+      }
+    });
+    return () => desuscribir();
+  }, []);
 
   const [fontsLoaded] = useFonts({
     PlusJakartaSans_400Regular,
