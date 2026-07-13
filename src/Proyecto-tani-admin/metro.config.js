@@ -13,7 +13,8 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
       type: 'sourceFile',
     };
   }
-  return context.resolveRequest(context, moduleName, platform);
+  // Delegar de forma segura al resolver estándar de Metro
+  return require('metro-resolver').resolve(context, moduleName, platform);
 };
 
 module.exports = config;
