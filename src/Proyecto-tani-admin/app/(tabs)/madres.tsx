@@ -18,9 +18,17 @@ const AGE_GROUPS = [
   { id: '12+', label: '12m+ (Lenguaje)' }
 ];
 
+const CITAS_TYPES = [
+  { id: 'LACTANCIA', label: 'Asesoría Lactancia', color: '#006953', icon: 'happy-outline' },
+  { id: 'PIEL A PIEL', label: 'Sesión Piel a Piel', color: '#C5A059', icon: 'people-outline' },
+  { id: 'CRED', label: 'Control CRED', color: '#499F86', icon: 'calendar-outline' },
+  { id: 'DESARROLLO', label: 'Ev. Desarrollo', color: '#9b4500', icon: 'analytics-outline' },
+  { id: 'MÉDICO', label: 'Médico Especialista', color: '#c62828', icon: 'medkit-outline' }
+];
+
 export default function AdminMothersScreen() {
   const router = useRouter();
-  const { mothers, appointments, updateAppointment, addMother } = useAdminStore();
+  const { mothers, appointments, updateAppointment, addMother, addAppointment } = useAdminStore();
 
   const [search, setSearch] = useState('');
   const [selectedGroup, setSelectedGroup] = useState('all');
@@ -28,6 +36,28 @@ export default function AdminMothersScreen() {
   const [showNotesDialog, setShowNotesDialog] = useState(false);
   const [targetAppId, setTargetAppId] = useState<string | null>(null);
   const [clinicalNotesText, setClinicalNotesText] = useState('');
+
+  // Estados para reprogramación individual
+  const [showReprogramModal, setShowReprogramModal] = useState(false);
+  const [reprogramApp, setReprogramApp] = useState<Appointment | null>(null);
+  const [reprogramDoctor, setReprogramDoctor] = useState('');
+  const [reprogramLugar, setReprogramLugar] = useState('');
+  const [reprogramMonto, setReprogramMonto] = useState('');
+  const [reprogramDate, setReprogramDate] = useState(new Date());
+  const [showReprogramDatePicker, setShowReprogramDatePicker] = useState(false);
+  const [showReprogramTimePicker, setShowReprogramTimePicker] = useState(false);
+
+  // Estados para programación grupal
+  const [showGroupSchedModal, setShowGroupSchedModal] = useState(false);
+  const [groupAgeRange, setGroupAgeRange] = useState('0-3');
+  const [groupType, setGroupType] = useState('CRED');
+  const [groupDoctor, setGroupDoctor] = useState('');
+  const [groupLugar, setGroupLugar] = useState('Tani Center - Sede Principal');
+  const [groupAmount, setGroupAmount] = useState('S/. 0.00');
+  const [groupNotes, setGroupNotes] = useState('');
+  const [groupDate, setGroupDate] = useState(new Date());
+  const [showGroupDatePicker, setShowGroupDatePicker] = useState(false);
+  const [showGroupTimePicker, setShowGroupTimePicker] = useState(false);
 
   // Estados de registro de nueva familia
   const [showRegisterModal, setShowRegisterModal] = useState(false);
@@ -124,22 +154,135 @@ export default function AdminMothersScreen() {
     }
   };
 
+  const handleSaveReprogram = () => {
+    if (!reprogramApp) return;
+    if (!reprogramDoctor.trim()) {
+      Alert.alert('Campo Obligatorio', 'Por favor ingresa el nombre del especialista.');
+      return;
+    }
+
+    const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const day = reprogramDate.getDate();
+    const month = months[reprogramDate.getMonth()];
+    let hours = reprogramDate.getHours();
+    const minutes = reprogramDate.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    const formattedTime = `${day} ${month}, ${hours}:${minutes} ${ampm}`;
+
+    updateAppointment(reprogramApp.id, {
+      doctor: reprogramDoctor.trim(),
+      hora: formattedTime,
+      lugar: reprogramLugar.trim() || 'Tani Center - Sede Principal',
+      pagoMonto: reprogramMonto.trim() || 'S/. 0.00'
+    }).then(() => {
+      Alert.alert('Cita Reprogramada', 'La cita se ha reprogramado correctamente.');
+      setShowReprogramModal(false);
+      setReprogramApp(null);
+      if (selectedMother) {
+        const refreshed = mothers.find(m => m.id === selectedMother.id);
+        if (refreshed) setSelectedMother(refreshed);
+      }
+    }).catch((err) => {
+      Alert.alert('Error', 'No se pudo reprogramar la cita: ' + err.message);
+    });
+  };
+
+  const handleSaveGroupSched = async () => {
+    if (!groupDoctor.trim()) {
+      Alert.alert('Campo Obligatorio', 'Por favor ingresa el nombre del especialista.');
+      return;
+    }
+
+    const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+    const day = groupDate.getDate();
+    const month = months[groupDate.getMonth()];
+    let hours = groupDate.getHours();
+    const minutes = groupDate.getMinutes().toString().padStart(2, '0');
+    const ampm = hours >= 12 ? 'PM' : 'AM';
+    hours = hours % 12;
+    hours = hours ? hours : 12;
+    const formattedTime = `${day} ${month}, ${hours}:${minutes} ${ampm}`;
+
+    const activeType = CITAS_TYPES.find(t => t.id === groupType) || CITAS_TYPES[2];
+
+    const targets: { motherId: string; babyId: string }[] = [];
+    mothers.forEach(m => {
+      m.babies.forEach(b => {
+        const age = calculateAgeInMonths(b.birthDate);
+        let match = false;
+        if (groupAgeRange === '0-3' && age <= 3) match = true;
+        else if (groupAgeRange === '4-6' && age >= 4 && age <= 6) match = true;
+        else if (groupAgeRange === '7-12' && age >= 7 && age <= 12) match = true;
+        else if (groupAgeRange === '12+' && age > 12) match = true;
+        else if (groupAgeRange === 'all') match = true;
+
+        if (match) {
+          targets.push({ motherId: m.id, babyId: b.id });
+        }
+      });
+    });
+
+    if (targets.length === 0) {
+      Alert.alert('Sin Pacientes', `No se encontraron bebés registrados en el grupo de edad seleccionado (${groupAgeRange}).`);
+      return;
+    }
+
+    try {
+      await Promise.all(targets.map(t => addAppointment({
+        motherId: t.motherId,
+        babyId: t.babyId,
+        tipo: groupType,
+        color: activeType.color,
+        titulo: activeType.label,
+        hora: formattedTime,
+        lugar: groupLugar.trim() || 'Tani Center - Sede Principal',
+        nota: groupNotes.trim() ? groupNotes.trim() : null,
+        tipoIcon: activeType.icon,
+        doctor: groupDoctor.trim(),
+        pagoEstado: 'Pendiente',
+        pagoMonto: groupAmount.trim() || 'S/. 0.00'
+      })));
+
+      Alert.alert('Programación Exitosa', `Se han agendado exitosamente ${targets.length} citas grupales de ${activeType.label} para el rango de edad ${groupAgeRange}.`);
+      setShowGroupSchedModal(false);
+      setGroupDoctor('');
+      setGroupNotes('');
+      if (selectedMother) {
+        const refreshed = mothers.find(m => m.id === selectedMother.id);
+        if (refreshed) setSelectedMother(refreshed);
+      }
+    } catch (err: any) {
+      Alert.alert('Error', 'No se pudieron programar las citas: ' + err.message);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       {/* Header */}
       <View style={styles.header}>
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: 8 }}>
           <View style={{ flex: 1 }}>
             <Text style={styles.headerTitle}>Directorio de Madres</Text>
             <Text style={styles.headerSubtitle}>Seguimiento clínico y agendado por hitos</Text>
           </View>
-          <TouchableOpacity 
-            style={styles.addMotherHeaderBtn}
-            onPress={() => setShowRegisterModal(true)}
-          >
-            <Ionicons name="person-add-outline" size={16} color="#FFF" />
-            <Text style={styles.addMotherHeaderBtnText}>Registrar</Text>
-          </TouchableOpacity>
+          <View style={{ flexDirection: 'row', gap: 6 }}>
+            <TouchableOpacity 
+              style={[styles.addMotherHeaderBtn, { backgroundColor: '#6c757d' }]}
+              onPress={() => setShowGroupSchedModal(true)}
+            >
+              <Ionicons name="people-outline" size={16} color="#FFF" />
+              <Text style={styles.addMotherHeaderBtnText}>Prog. Grupal</Text>
+            </TouchableOpacity>
+            <TouchableOpacity 
+              style={styles.addMotherHeaderBtn}
+              onPress={() => setShowRegisterModal(true)}
+            >
+              <Ionicons name="person-add-outline" size={16} color="#FFF" />
+              <Text style={styles.addMotherHeaderBtnText}>Registrar</Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </View>
 
@@ -331,19 +474,38 @@ export default function AdminMothersScreen() {
                         </Text>
                       )}
                       
-                      <TouchableOpacity 
-                        style={styles.addClinicalNotesBtn}
-                        onPress={() => {
-                          setTargetAppId(app.id);
-                          setClinicalNotesText(app.clinicalNotes || '');
-                          setShowNotesDialog(true);
-                        }}
-                      >
-                        <Ionicons name="create-outline" size={14} color={PRIMARY} />
-                        <Text style={styles.addClinicalNotesBtnText}>
-                          {app.clinicalNotes ? 'Editar Observación' : 'Registrar Observación'}
-                        </Text>
-                      </TouchableOpacity>
+                      <View style={{ flexDirection: 'row', gap: 12, marginTop: 8 }}>
+                        <TouchableOpacity 
+                          style={styles.addClinicalNotesBtn}
+                          onPress={() => {
+                            setTargetAppId(app.id);
+                            setClinicalNotesText(app.clinicalNotes || '');
+                            setShowNotesDialog(true);
+                          }}
+                        >
+                          <Ionicons name="create-outline" size={14} color={PRIMARY} />
+                          <Text style={styles.addClinicalNotesBtnText}>
+                            {app.clinicalNotes ? 'Editar Observación' : 'Registrar Observación'}
+                          </Text>
+                        </TouchableOpacity>
+
+                        <TouchableOpacity 
+                          style={[styles.addClinicalNotesBtn, { borderColor: '#c5a059' }]}
+                          onPress={() => {
+                            setReprogramApp(app);
+                            setReprogramDoctor(app.doctor || '');
+                            setReprogramLugar(app.lugar || 'Tani Center - Sede Principal');
+                            setReprogramMonto(app.pagoMonto || 'S/. 0.00');
+                            setReprogramDate(new Date());
+                            setShowReprogramModal(true);
+                          }}
+                        >
+                          <Ionicons name="calendar-outline" size={14} color="#c5a059" />
+                          <Text style={[styles.addClinicalNotesBtnText, { color: '#c5a059' }]}>
+                            Reprogramar Cita
+                          </Text>
+                        </TouchableOpacity>
+                      </View>
                     </View>
                   </View>
                 ))
@@ -493,6 +655,333 @@ export default function AdminMothersScreen() {
             </View>
           </View>
         </View>
+      </Modal>
+
+      {/* Modal Reprogramación Cita */}
+      <Modal
+        visible={showReprogramModal}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => {
+          setShowReprogramModal(false);
+          setReprogramApp(null);
+        }}
+      >
+        <SafeAreaView style={styles.modalSafeArea}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity style={styles.modalCloseButton} onPress={() => {
+              setShowReprogramModal(false);
+              setReprogramApp(null);
+            }}>
+              <Ionicons name="arrow-back" size={24} color={PRIMARY} />
+            </TouchableOpacity>
+            <Text style={styles.modalHeaderTitle}>Reprogramar Cita</Text>
+          </View>
+
+          <ScrollView contentContainerStyle={styles.modalContent} showsVerticalScrollIndicator={false}>
+            {reprogramApp && (
+              <>
+                <Text style={styles.modalSectionTitle}>Detalles de la Cita: {reprogramApp.titulo}</Text>
+                
+                <View style={styles.formCard}>
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Especialista / Doctor *</Text>
+                    <TextInput 
+                      style={styles.input} 
+                      value={reprogramDoctor} 
+                      onChangeText={setReprogramDoctor} 
+                      placeholder="Nombre del especialista" 
+                    />
+                  </View>
+
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Establecimiento / Lugar *</Text>
+                    <TextInput 
+                      style={styles.input} 
+                      value={reprogramLugar} 
+                      onChangeText={setReprogramLugar} 
+                      placeholder="Lugar de la cita" 
+                    />
+                  </View>
+
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Costo / Monto *</Text>
+                    <TextInput 
+                      style={styles.input} 
+                      value={reprogramMonto} 
+                      onChangeText={setReprogramMonto} 
+                      placeholder="S/. XX.XX" 
+                    />
+                  </View>
+
+                  {/* Fecha de la cita */}
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Fecha de la Cita *</Text>
+                    <TouchableOpacity 
+                      style={styles.datePickerSelector}
+                      onPress={() => setShowReprogramDatePicker(true)}
+                    >
+                      <Ionicons name="calendar-outline" size={20} color={PRIMARY} />
+                      <Text style={styles.datePickerSelectorText}>
+                        {reprogramDate.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+
+                  {/* Hora de la cita */}
+                  <View style={styles.inputGroup}>
+                    <Text style={styles.inputLabel}>Hora de la Cita *</Text>
+                    <TouchableOpacity 
+                      style={styles.datePickerSelector}
+                      onPress={() => setShowReprogramTimePicker(true)}
+                    >
+                      <Ionicons name="time-outline" size={20} color={PRIMARY} />
+                      <Text style={styles.datePickerSelectorText}>
+                        {reprogramDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                      </Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+
+                {showReprogramDatePicker && (
+                  <DateTimePicker
+                    value={reprogramDate}
+                    mode="date"
+                    display="default"
+                    onChange={(event, selectedDate) => {
+                      setShowReprogramDatePicker(Platform.OS === 'ios');
+                      if (selectedDate) {
+                        const newDate = new Date(reprogramDate);
+                        newDate.setFullYear(selectedDate.getFullYear());
+                        newDate.setMonth(selectedDate.getMonth());
+                        newDate.setDate(selectedDate.getDate());
+                        setReprogramDate(newDate);
+                      }
+                    }}
+                    minimumDate={new Date()}
+                  />
+                )}
+
+                {showReprogramTimePicker && (
+                  <DateTimePicker
+                    value={reprogramDate}
+                    mode="time"
+                    display="default"
+                    onChange={(event, selectedTime) => {
+                      setShowReprogramTimePicker(Platform.OS === 'ios');
+                      if (selectedTime) {
+                        const newDate = new Date(reprogramDate);
+                        newDate.setHours(selectedTime.getHours());
+                        newDate.setMinutes(selectedTime.getMinutes());
+                        setReprogramDate(newDate);
+                      }
+                    }}
+                  />
+                )}
+
+                <TouchableOpacity 
+                  style={styles.modalBookButton}
+                  onPress={handleSaveReprogram}
+                >
+                  <Ionicons name="save-outline" size={20} color="#FFF" />
+                  <Text style={styles.modalBookButtonText}>Guardar Reprogramación</Text>
+                </TouchableOpacity>
+              </>
+            )}
+            <View style={{ height: 40 }} />
+          </ScrollView>
+        </SafeAreaView>
+      </Modal>
+
+      {/* Modal Programación Grupal */}
+      <Modal
+        visible={showGroupSchedModal}
+        animationType="slide"
+        transparent={false}
+        onRequestClose={() => setShowGroupSchedModal(false)}
+      >
+        <SafeAreaView style={styles.modalSafeArea}>
+          <View style={styles.modalHeader}>
+            <TouchableOpacity style={styles.modalCloseButton} onPress={() => setShowGroupSchedModal(false)}>
+              <Ionicons name="arrow-back" size={24} color={PRIMARY} />
+            </TouchableOpacity>
+            <Text style={styles.modalHeaderTitle}>Programación Grupal por Edad</Text>
+          </View>
+
+          <ScrollView contentContainerStyle={styles.modalContent} showsVerticalScrollIndicator={false}>
+            <Text style={styles.modalSectionTitle}>Configuración del Control Grupal</Text>
+            
+            <View style={styles.formCard}>
+              {/* Selector de Rango de Edad */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Grupo de Edad de los Bebés *</Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+                  {[
+                    { id: 'all', label: 'Todos' },
+                    { id: '0-3', label: '0-3m (Lactancia)' },
+                    { id: '4-6', label: '4-6m (Sólidos)' },
+                    { id: '7-12', label: '7-12m (Gateo)' },
+                    { id: '12+', label: '12m+ (Lenguaje)' }
+                  ].map(g => (
+                    <TouchableOpacity
+                      key={g.id}
+                      style={[
+                        styles.filterPill, 
+                        groupAgeRange === g.id && { backgroundColor: PRIMARY, borderColor: PRIMARY }
+                      ]}
+                      onPress={() => setGroupAgeRange(g.id)}
+                    >
+                      <Text style={[
+                        styles.filterPillText, 
+                        groupAgeRange === g.id && { color: '#FFF' }
+                      ]}>
+                        {g.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              {/* Selector de Tipo de Cita */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Tipo de Cita / Actividad *</Text>
+                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: 4 }}>
+                  {CITAS_TYPES.map(t => (
+                    <TouchableOpacity
+                      key={t.id}
+                      style={[
+                        styles.filterPill, 
+                        groupType === t.id && { backgroundColor: t.color, borderColor: t.color }
+                      ]}
+                      onPress={() => setGroupType(t.id)}
+                    >
+                      <Text style={[
+                        styles.filterPillText, 
+                        groupType === t.id && { color: '#FFF' }
+                      ]}>
+                        {t.label}
+                      </Text>
+                    </TouchableOpacity>
+                  ))}
+                </View>
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Especialista / Doctor *</Text>
+                <TextInput 
+                  style={styles.input} 
+                  value={groupDoctor} 
+                  onChangeText={setGroupDoctor} 
+                  placeholder="Nombre del especialista responsable" 
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Lugar del Evento *</Text>
+                <TextInput 
+                  style={styles.input} 
+                  value={groupLugar} 
+                  onChangeText={setGroupLugar} 
+                  placeholder="Ej: Sala de Lactancia o Zoom" 
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Costo / Monto por Paciente *</Text>
+                <TextInput 
+                  style={styles.input} 
+                  value={groupAmount} 
+                  onChangeText={setGroupAmount} 
+                  placeholder="S/. 0.00" 
+                />
+              </View>
+
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Observaciones / Notas (Opcional)</Text>
+                <TextInput 
+                  style={styles.input} 
+                  value={groupNotes} 
+                  onChangeText={setGroupNotes} 
+                  placeholder="Instrucciones adicionales para la madre..." 
+                />
+              </View>
+
+              {/* Fecha de la cita */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Fecha del Control Grupal *</Text>
+                <TouchableOpacity 
+                  style={styles.datePickerSelector}
+                  onPress={() => setShowGroupDatePicker(true)}
+                >
+                  <Ionicons name="calendar-outline" size={20} color={PRIMARY} />
+                  <Text style={styles.datePickerSelectorText}>
+                    {groupDate.toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit', year: 'numeric' })}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+
+              {/* Hora de la cita */}
+              <View style={styles.inputGroup}>
+                <Text style={styles.inputLabel}>Hora del Control Grupal *</Text>
+                <TouchableOpacity 
+                  style={styles.datePickerSelector}
+                  onPress={() => setShowGroupTimePicker(true)}
+                >
+                  <Ionicons name="time-outline" size={20} color={PRIMARY} />
+                  <Text style={styles.datePickerSelectorText}>
+                    {groupDate.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit', hour12: true })}
+                  </Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            {showGroupDatePicker && (
+              <DateTimePicker
+                value={groupDate}
+                mode="date"
+                display="default"
+                onChange={(event, selectedDate) => {
+                  setShowGroupDatePicker(Platform.OS === 'ios');
+                  if (selectedDate) {
+                    const newDate = new Date(groupDate);
+                    newDate.setFullYear(selectedDate.getFullYear());
+                    newDate.setMonth(selectedDate.getMonth());
+                    newDate.setDate(selectedDate.getDate());
+                    setGroupDate(newDate);
+                  }
+                }}
+                minimumDate={new Date()}
+              />
+            )}
+
+            {showGroupTimePicker && (
+              <DateTimePicker
+                value={groupDate}
+                mode="time"
+                display="default"
+                onChange={(event, selectedTime) => {
+                  setShowGroupTimePicker(Platform.OS === 'ios');
+                  if (selectedTime) {
+                    const newDate = new Date(groupDate);
+                    newDate.setHours(selectedTime.getHours());
+                    newDate.setMinutes(selectedTime.getMinutes());
+                    setGroupDate(newDate);
+                  }
+                }}
+              />
+            )}
+
+            <TouchableOpacity 
+              style={styles.modalBookButton}
+              onPress={handleSaveGroupSched}
+            >
+              <Ionicons name="people-outline" size={20} color="#FFF" />
+              <Text style={styles.modalBookButtonText}>Programar para el Grupo</Text>
+            </TouchableOpacity>
+
+            <View style={{ height: 40 }} />
+          </ScrollView>
+        </SafeAreaView>
       </Modal>
     </SafeAreaView>
   );
