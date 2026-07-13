@@ -319,7 +319,7 @@ export default function AdminMothersScreen() {
 
                     <Text style={styles.appCardMeta}>📅 {app.hora} • 📍 {app.lugar}</Text>
                     <Text style={styles.appCardMeta}>👨‍⚕️ Especialista: {app.doctor || 'Por asignar'}</Text>
-                    {app.nota && <Text style={styles.appCardNota}>"Madre indicó: {app.nota}"</Text>}
+                    {app.nota && <Text style={styles.appCardNota}>&quot;Madre indicó: {app.nota}&quot;</Text>}
 
                     <View style={styles.clinicalNotesWrapper}>
                       <Text style={styles.clinicalNotesHeader}>Observación Médica / Clínica:</Text>
