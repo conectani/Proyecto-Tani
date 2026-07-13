@@ -152,8 +152,13 @@ export const useAuthStore = create<AuthState>()(
         });
       },
       logout: async () => {
-        await supabase.auth.signOut();
-        set({ user: null, token: null, isAuthenticated: false });
+        try {
+          await supabase.auth.signOut();
+        } catch (e) {
+          console.warn('Error during Supabase signout:', e);
+        } finally {
+          set({ user: null, token: null, isAuthenticated: false });
+        }
       },
       updateProfile: async (updated) => {
         const currentUser = get().user;
