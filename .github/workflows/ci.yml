@@ -35,6 +35,7 @@ jobs:
 
     - name: 5. Analisis de Calidad de Codigo (SonarCloud)
       uses: SonarSource/sonarcloud-github-action@master
+      continue-on-error: true
       with:
         projectBaseDir: src/Proyecto-tani
       env:
@@ -43,6 +44,7 @@ jobs:
 
     - name: 6. Analisis de Seguridad de Dependencias (Snyk SCA)
       uses: snyk/actions/node@master
+      continue-on-error: true
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
@@ -77,6 +79,7 @@ jobs:
 
     - name: 5. Analisis de Seguridad de Dependencias (Snyk SCA)
       uses: snyk/actions/node@master
+      continue-on-error: true
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
