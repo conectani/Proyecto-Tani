@@ -8,6 +8,9 @@ import * as Haptics from 'expo-haptics';
 import { AnimatedButton } from '@/constants/animations';
 import { useAuthStore } from '@/stores/auth';
 import { useAppointmentStore } from '@/stores/appointments';
+import NetInfo from '@react-native-community/netinfo';
+import { saveTaskOffline } from '@/utils/syncManager';
+
 
 export default function AnadirNotaScreen() {
   const router = useRouter();
@@ -53,7 +56,7 @@ export default function AnadirNotaScreen() {
     setItems(items.filter(item => item.id !== id));
   };
 
-  const handleSave = () => {
+  const handleSave = async () => {
     // Validar que al menos haya un detalle con texto
     const validItems = items.filter(item => item.text.trim() !== '');
     if (validItems.length === 0) {
@@ -66,18 +69,41 @@ export default function AnadirNotaScreen() {
       return;
     }
 
-    addNote({
-      appointmentId,
-      mood,
-      priority,
+    const rawNoteData = {
+      cita_id: appointmentId,
+      mood: mood || null,
+      priority: priority || 'normal',
       details: validItems,
-      date: new Date().toISOString().split('T')[0],
-    });
+    };
 
-    Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    Alert.alert('Nota Guardada', 'La nota ha sido asociada a tu cita correctamente.', [
-      { text: 'Aceptar', onPress: () => router.back() }
-    ]);
+    const red = await NetInfo.fetch();
+    if (red.isConnected) {
+      try {
+        await addNote({
+          appointmentId,
+          mood,
+          priority,
+          details: validItems,
+          date: new Date().toISOString().split('T')[0],
+        });
+
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+        Alert.alert('Guardado en la nube con éxito', 'La nota ha sido asociada a tu cita correctamente.', [
+          { text: 'Aceptar', onPress: () => router.back() }
+        ]);
+      } catch (error: any) {
+        Alert.alert('Error', 'Hubo un error al guardar en la nube: ' + error.message);
+      }
+    } else {
+      // Guardar localmente usando nuestro syncManager
+      await saveTaskOffline('notas_cita', 'INSERT', rawNoteData);
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Warning);
+      Alert.alert(
+        'Sin internet',
+        'Se guardó localmente en el celular y se sincronizará cuando recuperes señal.',
+        [{ text: 'Aceptar', onPress: () => router.back() }]
+      );
+    }
   };
 
   const getHeaderName = () => {
