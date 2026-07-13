@@ -39,10 +39,10 @@ export default function RootLayout() {
     if (fontsLoaded) {
       SplashScreen.hideAsync();
 
-      // Mostrar la pantalla de carga durante exactamente 8.5 segundos
+      // Mostrar la pantalla de carga de forma dinámica (máximo 1.5 segundos)
       const timer = setTimeout(() => {
         setVideoFinished(true);
-      }, 7000);
+      }, 1500);
 
       return () => clearTimeout(timer);
     }

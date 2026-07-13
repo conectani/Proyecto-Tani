@@ -1,8 +1,8 @@
-﻿import React from 'react';
+import React from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, Image,
+  TouchableOpacity, Image, Linking,
 } from 'react-native';
 import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -91,8 +91,11 @@ export default function FaqScreen() {
       </ScrollView>
 
       {/* WhatsApp-style FAB */}
-      <TouchableOpacity style={styles.fab}>
-        <Ionicons name="chatbubble-ellipses" size={28} color="#FFF" />
+      <TouchableOpacity 
+        style={styles.fab}
+        onPress={() => Linking.openURL('https://wa.me/51900800700?text=Hola%20Familia%20Tani,%20necesito%20ayuda%20con%20una%20cita.')}
+      >
+        <Ionicons name="logo-whatsapp" size={28} color="#FFF" />
       </TouchableOpacity>
     </SafeAreaView>
   );

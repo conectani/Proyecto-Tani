@@ -9,7 +9,7 @@ import QRCode from 'react-native-qrcode-svg';
 import { AnimatedButton, useFadeIn } from '@/constants/animations';
 import { Animated } from 'react-native';
 import { useAuthStore } from '@/stores/auth';
-import { useBabyStore } from '@/stores/babies';
+import { useBabyStore, getAgeText } from '@/stores/babies';
 
 export default function MiCarnetScreen() {
   const router = useRouter();
@@ -44,7 +44,7 @@ export default function MiCarnetScreen() {
           >
             <View style={s.avatarInner}>
               <Image
-                source={require('@/assets/images/Tani user icon.png')}
+                source={activeBaby?.imageUri ? { uri: activeBaby.imageUri } : require('@/assets/images/Tani user icon.png')}
                 style={s.avatar}
               />
             </View>
@@ -57,8 +57,30 @@ export default function MiCarnetScreen() {
         {/* Info */}
         <View style={s.infoSection}>
           <Text style={s.nameText}>{fullName}</Text>
-          <View style={s.historyBadge}>
-            <Text style={s.historyText}>Nro. Historia: {historyNum}</Text>
+          
+          <View style={s.historyRow}>
+            <View style={s.historyBadge}>
+              <Text style={s.historyText}>Nro. Historia: {historyNum}</Text>
+            </View>
+            <View style={[s.historyBadge, { backgroundColor: 'rgba(0, 105, 83, 0.1)' }]}>
+              <Text style={[s.historyText, { color: '#006953' }]}>
+                {activeBaby ? getAgeText(activeBaby.birthDate) : '8 meses'}
+              </Text>
+            </View>
+          </View>
+
+          {/* Datos clínicos adicionales */}
+          <View style={s.clinicalRow}>
+            <View style={s.clinicalItem}>
+              <Ionicons name="water-outline" size={14} color="#ba1a1a" />
+              <Text style={s.clinicalLabel}>G. Sanguíneo: </Text>
+              <Text style={s.clinicalValue}>O Positivo (O+)</Text>
+            </View>
+            <View style={s.clinicalItem}>
+              <Ionicons name="warning-outline" size={14} color="#ff7f27" />
+              <Text style={s.clinicalLabel}>Alergias: </Text>
+              <Text style={[s.clinicalValue, { color: '#ff7f27', fontWeight: '700' }]}>Ninguna registrada</Text>
+            </View>
           </View>
         </View>
 
@@ -113,10 +135,15 @@ const s = StyleSheet.create({
   avatar: { width: '100%', height: '100%' },
   familyBadge: { position: 'absolute', bottom: -10, backgroundColor: '#006953', paddingHorizontal: 14, paddingVertical: 5, borderRadius: 20, borderWidth: 2, borderColor: '#fbf9f8' },
   familyBadgeText: { color: '#FFF', fontSize: 10, fontWeight: '800', letterSpacing: 1.5 },
-  infoSection: { alignItems: 'center', marginBottom: 28, marginTop: 8 },
-  nameText: { fontSize: 28, fontWeight: '800', color: '#1b1c1c', marginBottom: 8 },
-  historyBadge: { backgroundColor: 'rgba(73,159,134,0.12)', paddingHorizontal: 16, paddingVertical: 6, borderRadius: 20 },
-  historyText: { color: '#002018', fontSize: 14, fontWeight: '600' },
+  infoSection: { alignItems: 'center', marginBottom: 20, marginTop: 8 },
+  nameText: { fontSize: 28, fontWeight: '800', color: '#1b1c1c', marginBottom: 6 },
+  historyRow: { flexDirection: 'row', gap: 8, marginBottom: 12 },
+  historyBadge: { backgroundColor: 'rgba(73,159,134,0.12)', paddingHorizontal: 14, paddingVertical: 6, borderRadius: 20 },
+  historyText: { color: '#002018', fontSize: 13, fontWeight: '600' },
+  clinicalRow: { flexDirection: 'column', gap: 6, alignItems: 'center', marginTop: 4 },
+  clinicalItem: { flexDirection: 'row', alignItems: 'center', gap: 4 },
+  clinicalLabel: { fontSize: 12, fontWeight: '500', color: '#6e7a74' },
+  clinicalValue: { fontSize: 12, fontWeight: '600', color: '#1b1c1c' },
   qrCardContainer: { width: '100%', maxWidth: 320 },
   qrGradientBorder: { borderRadius: 32, padding: 3, shadowColor: '#499F86', shadowOffset: { width: 0, height: 8 }, shadowOpacity: 0.2, shadowRadius: 24, elevation: 8 },
   qrCard: { backgroundColor: '#FFF', borderRadius: 30, padding: 28, alignItems: 'center', gap: 20 },

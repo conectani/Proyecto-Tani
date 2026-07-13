@@ -47,8 +47,20 @@ const ExpoSecureStoreAdapter = {
   },
 };
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL || 'https://tu-proyecto.supabase.co';
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || 'tu-anon-key';
+const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
+const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || supabaseUrl.includes('tu-proyecto') || supabaseUrl === 'https://tu-proyecto.supabase.co') {
+  throw new Error(
+    'Falta EXPO_PUBLIC_SUPABASE_URL. Por favor, asegúrate de que el archivo .env de este aplicativo esté bien configurado con la URL de tu proyecto de Supabase.'
+  );
+}
+
+if (!supabaseAnonKey || supabaseAnonKey === 'tu-anon-key') {
+  throw new Error(
+    'Falta EXPO_PUBLIC_SUPABASE_ANON_KEY. Por favor, asegúrate de que el archivo .env de este aplicativo esté bien configurado con la Anon Key de tu proyecto de Supabase.'
+  );
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {

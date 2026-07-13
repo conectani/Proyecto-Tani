@@ -1,5 +1,5 @@
-import React from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Image, Alert } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
@@ -8,6 +8,8 @@ import * as Haptics from 'expo-haptics';
 
 export default function ConfirmacionCitaScreen() {
   const router = useRouter();
+  const [voucherUploaded, setVoucherUploaded] = useState(false);
+  const [paymentMethod, setPaymentMethod] = useState<'yape' | 'plin'>('yape');
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -81,30 +83,67 @@ export default function ConfirmacionCitaScreen() {
 
         {/* Payment Section */}
         <View style={styles.sectionContainer}>
-          <Text style={styles.sectionTitle}>Método de Pago</Text>
+          <Text style={styles.sectionTitle}>Método de Pago (Billetera Digital)</Text>
           
-          {/* Saved Card */}
-          <View style={styles.savedCard}>
-            <View style={styles.savedCardLeft}>
-              <View style={styles.cardLogoBox}>
-                <Text style={styles.cardLogoText}>VISA</Text>
-              </View>
-              <View>
-                <Text style={styles.cardNumber}>•••• •••• •••• 4582</Text>
-                <Text style={styles.cardExpiry}>Expira 09/27</Text>
-              </View>
+          <View style={styles.walletTabs}>
+            <TouchableOpacity 
+              style={[styles.walletTab, paymentMethod === 'yape' && styles.walletTabActiveYape]}
+              onPress={() => setPaymentMethod('yape')}
+            >
+              <Text style={[styles.walletTabText, paymentMethod === 'yape' && styles.walletTabTextActive]}>Yape</Text>
+            </TouchableOpacity>
+            
+            <TouchableOpacity 
+              style={[styles.walletTab, paymentMethod === 'plin' && styles.walletTabActivePlin]}
+              onPress={() => setPaymentMethod('plin')}
+            >
+              <Text style={[styles.walletTabText, paymentMethod === 'plin' && styles.walletTabTextActive]}>Plin</Text>
+            </TouchableOpacity>
+          </View>
+
+          <View style={styles.walletInstructions}>
+            <View style={styles.walletLogoBox}>
+              <Ionicons 
+                name="phone-portrait-outline" 
+                size={24} 
+                color={paymentMethod === 'yape' ? '#7A1FA2' : '#0091EA'} 
+              />
             </View>
-            <View style={styles.checkCircle}>
-              <Ionicons name="checkmark" size={16} color="#FFF" />
+            <View style={{ flex: 1 }}>
+              <Text style={styles.walletTitle}>Yapear / Plinar al número:</Text>
+              <Text style={styles.walletNumber}>900 800 700</Text>
+              <Text style={styles.walletBeneficiary}>Titular: ONG Taller de los Niños (TANI)</Text>
             </View>
           </View>
 
-          {/* Add New Payment */}
-          <TouchableOpacity style={styles.addPaymentButton}>
-            <View style={styles.addPaymentIconBox}>
-              <Ionicons name="add" size={20} color={Colors.light.textSecondary} />
-            </View>
-            <Text style={styles.addPaymentText}>Agregar nuevo método de pago</Text>
+          <TouchableOpacity 
+            style={[styles.uploadVoucherBtn, voucherUploaded && styles.uploadVoucherBtnSuccess]} 
+            onPress={() => {
+              Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+              Alert.alert(
+                'Seleccionar Imagen',
+                'Simulando acceso a galería para subir la captura de pantalla del voucher.',
+                [
+                  { text: 'Cancelar', style: 'cancel' },
+                  { 
+                    text: 'Subir Captura', 
+                    onPress: () => {
+                      setVoucherUploaded(true);
+                      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+                    }
+                  }
+                ]
+              );
+            }}
+          >
+            <Ionicons 
+              name={voucherUploaded ? "checkmark-circle" : "cloud-upload-outline"} 
+              size={20} 
+              color={voucherUploaded ? "#FFF" : Colors.light.primary} 
+            />
+            <Text style={[styles.uploadVoucherText, voucherUploaded && styles.uploadVoucherTextSuccess]}>
+              {voucherUploaded ? 'Voucher Subido Con Éxito' : 'Subir Captura de Voucher'}
+            </Text>
           </TouchableOpacity>
         </View>
 
@@ -128,13 +167,26 @@ export default function ConfirmacionCitaScreen() {
 
       {/* Fixed Bottom Action */}
       <View style={styles.bottomActionArea}>
-        <TouchableOpacity style={styles.payButton} onPress={() => { Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); router.push('/(tabs)/citas'); }}>
-          <Text style={styles.payButtonText}>Pagar Ahora</Text>
-          <Ionicons name="lock-closed" size={20} color="#FFF" />
+        <TouchableOpacity 
+          style={[styles.payButton, !voucherUploaded && styles.payButtonDisabled]} 
+          disabled={!voucherUploaded}
+          onPress={() => { 
+            Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success); 
+            Alert.alert(
+              'Pago Registrado',
+              'Hemos recibido tu sustento de pago. El equipo de TANI validará el voucher en un plazo máximo de 24 horas.',
+              [
+                { text: 'Aceptar', onPress: () => router.push('/(tabs)/citas') }
+              ]
+            );
+          }}
+        >
+          <Text style={styles.payButtonText}>Confirmar y Enviar Voucher</Text>
+          <Ionicons name="checkmark-done-circle" size={20} color="#FFF" />
         </TouchableOpacity>
         <View style={styles.secureTextRow}>
           <Ionicons name="shield-checkmark" size={14} color={Colors.light.textSecondary} opacity={0.6} />
-          <Text style={styles.secureText}>Pago encriptado y seguro por SSL</Text>
+          <Text style={styles.secureText}>Validación administrativa en un plazo de 24 horas</Text>
         </View>
       </View>
 
@@ -333,30 +385,100 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  addPaymentButton: {
+  walletTabs: {
+    flexDirection: 'row',
+    gap: 12,
+    marginBottom: 16,
+  },
+  walletTab: {
+    flex: 1,
+    paddingVertical: 12,
+    borderRadius: 14,
+    backgroundColor: '#f5f3f3',
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 1,
+    borderColor: 'transparent',
+  },
+  walletTabActiveYape: {
+    backgroundColor: 'rgba(122, 31, 162, 0.1)',
+    borderColor: '#7A1FA2',
+  },
+  walletTabActivePlin: {
+    backgroundColor: 'rgba(0, 145, 234, 0.1)',
+    borderColor: '#0091EA',
+  },
+  walletTabText: {
+    fontSize: 15,
+    fontWeight: '700',
+    color: '#6e7a74',
+  },
+  walletTabTextActive: {
+    color: '#1b1c1c',
+  },
+  walletInstructions: {
+    flexDirection: 'row',
+    backgroundColor: '#f5f3f3',
+    borderRadius: 20,
+    padding: 20,
+    gap: 16,
+    alignItems: 'center',
+    marginBottom: 16,
+  },
+  walletLogoBox: {
+    width: 48,
+    height: 48,
+    borderRadius: 16,
+    backgroundColor: '#FFF',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  walletTitle: {
+    fontSize: 11,
+    fontWeight: '700',
+    color: '#6e7a74',
+    textTransform: 'uppercase',
+    letterSpacing: 1,
+  },
+  walletNumber: {
+    fontSize: 22,
+    fontWeight: '800',
+    color: '#1b1c1c',
+    marginVertical: 2,
+  },
+  walletBeneficiary: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: '#006953',
+  },
+  uploadVoucherBtn: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 16,
-    padding: 20,
-    borderRadius: 24,
+    justifyContent: 'center',
+    gap: 10,
+    padding: 16,
+    borderRadius: 20,
     borderWidth: 2,
-    borderColor: Colors.light.outlineVariant,
+    borderColor: Colors.light.primary,
     borderStyle: 'dashed',
   },
-  addPaymentIconBox: {
-    width: 56,
-    height: 36,
-    backgroundColor: '#f0eded',
-    borderRadius: 6,
-    borderWidth: 1,
-    borderColor: 'rgba(190, 201, 195, 0.3)',
-    justifyContent: 'center',
-    alignItems: 'center',
+  uploadVoucherBtnSuccess: {
+    backgroundColor: '#006953',
+    borderColor: '#006953',
+    borderStyle: 'solid',
   },
-  addPaymentText: {
+  uploadVoucherText: {
     fontSize: 15,
-    fontWeight: '600',
-    color: Colors.light.textSecondary,
+    fontWeight: '700',
+    color: Colors.light.primary,
+  },
+  uploadVoucherTextSuccess: {
+    color: '#FFF',
+  },
+  payButtonDisabled: {
+    backgroundColor: '#bec9c3',
+    shadowOpacity: 0,
+    elevation: 0,
   },
   summaryCard: {
     backgroundColor: 'rgba(245, 243, 243, 0.5)',
