@@ -323,18 +323,30 @@ export default function AdminMothersScreen() {
       </View>
 
       {/* Directorio de Madres */}
-      <ScrollView contentContainerStyle={styles.listContainer} showsVerticalScrollIndicator={false}>
-        {filteredMothers.length === 0 ? (
-          <View style={styles.emptyContainer}>
-            <Ionicons name="people-outline" size={48} color={TEXT_SECONDARY} style={{ opacity: 0.4, marginBottom: 12 }} />
-            <Text style={styles.emptyText}>No se encontraron madres en este grupo.</Text>
-          </View>
-        ) : (
-          filteredMothers.map(mother => {
+        {/* Directorio de Madres Optimizado con FlatList */}
+      {filteredMothers.length === 0 ? (
+        <View style={styles.emptyContainer}>
+          <Ionicons name="people-outline" size={48} color={TEXT_SECONDARY} style={{ opacity: 0.4, marginBottom: 12 }} />
+          <Text style={styles.emptyText}>No se encontraron madres en este grupo.</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={filteredMothers}
+          keyExtractor={(mother) => mother.id}
+          contentContainerStyle={styles.listContainer}
+          showsVerticalScrollIndicator={false}
+          
+          // --- PARÁMETROS DE RENDIMIENTO ---
+          initialNumToRender={10}       // Cuántos elementos cargar al inicio (lo que cabe en pantalla)
+          maxToRenderPerBatch={10}      // Cuántos elementos procesar por lote al hacer scroll
+          windowSize={5}                // Cuánta memoria reservar fuera de la pantalla (5 pantallas de alto)
+          removeClippedSubviews={true}  // Desmontar las tarjetas que salieron de pantalla (ahorra RAM)
+          
+          // Renderizado de cada tarjeta (Mismo diseño pero modular)
+          renderItem={({ item: mother }) => {
             const motherApps = getMotherAppointments(mother.id);
             return (
               <TouchableOpacity
-                key={mother.id}
                 style={styles.motherCard}
                 onPress={() => setSelectedMother(mother)}
               >
@@ -370,10 +382,9 @@ export default function AdminMothersScreen() {
                 </View>
               </TouchableOpacity>
             );
-          })
-        )}
-        <View style={{ height: 40 }} />
-      </ScrollView>
+          }}
+        />
+      )}
 
       {/* Modal Ficha Detallada */}
       <Modal
