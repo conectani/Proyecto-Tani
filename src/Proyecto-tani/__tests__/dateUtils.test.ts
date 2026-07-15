@@ -43,6 +43,7 @@ describe('Suite de Pruebas Unitarias Clínicas y de Utilidades de Fecha', () => 
     test('Debería retornar 0 si la fecha de nacimiento es inválida o vacía', () => {
       expect(calculateAgeInMonths('')).toBe(0);
       expect(calculateAgeInMonths('fecha-no-valida')).toBe(0);
+      expect(calculateAgeInMonths('2026-01-22', 'fecha-hoy-invalida')).toBe(0);
     });
   });
 
@@ -113,6 +114,7 @@ describe('Suite de Pruebas Unitarias Clínicas y de Utilidades de Fecha', () => 
     test('Debería manejar de forma segura entradas inválidas o vacías', () => {
       expect(calculatePregnancyWeeks('').isValid).toBe(false);
       expect(calculatePregnancyWeeks('invalid-date').isValid).toBe(false);
+      expect(calculatePregnancyWeeks('2026-05-10', 'invalid-base-date').isValid).toBe(false);
     });
   });
 
@@ -123,6 +125,7 @@ describe('Suite de Pruebas Unitarias Clínicas y de Utilidades de Fecha', () => 
     test('Debería retornar un listado vacío ante entradas inválidas', () => {
       expect(getVaccineSchedule('')).toEqual([]);
       expect(getVaccineSchedule('invalid-date')).toEqual([]);
+      expect(getVaccineSchedule('2026-01-22', 'invalid-base-date')).toEqual([]);
     });
 
     test('Debería listar la cantidad correcta de vacunas recomendadas', () => {
