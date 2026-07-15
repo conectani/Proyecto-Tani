@@ -1,244 +1,204 @@
-import React, { useState } from 'react';
-import {
-  View, Text, TextInput, TouchableOpacity, StyleSheet,
-  Image, KeyboardAvoidingView, Platform, ScrollView, Alert,
-} from 'react-native';
+import React from 'react';
+import { View, Text, TextInput, TouchableOpacity, StyleSheet, ActivityIndicator, Alert } from 'react-native';
 import { useRouter } from 'expo-router';
-import { Ionicons } from '@expo/vector-icons';
 
-const TANI_LOGO = require('@/assets/images/Tani Icon.png');
+// ==========================================
+// 1. IMPORTACIONES DE LAS LIBRERÍAS DE VALIDACIÓN
+// ==========================================
+import { useForm, Controller } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import * as z from 'zod';
+import { useAuthStore } from '@/stores/auth';
+
+// ==========================================
+// 2. DEFINICIÓN DEL ESQUEMA (REGLAS DE VALIDACIÓN)
+// Se define fuera del componente para que no se recree en cada renderizado.
+// ==========================================
+const registerSchema = z.object({
+  name: z.string().min(2, 'El nombre debe tener al menos 2 letras'),
+  surname: z.string().min(2, 'El apellido debe tener al menos 2 letras'),
+  phone: z
+    .string()
+    .length(9, 'El celular debe tener exactamente 9 dígitos')
+    .regex(/^[0-9]+$/, 'Solo se permiten números'),
+  dni: z
+    .string()
+    .length(8, 'El DNI debe tener exactamente 8 dígitos')
+    .regex(/^[0-9]+$/, 'Solo se permiten números'),
+  email: z.string().email('Debe ingresar un correo electrónico válido'),
+  password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
+});
+
+// Tipado estricto automático a partir del esquema de Zod
+type RegisterFormData = z.infer<typeof registerSchema>;
 
 export default function RegisterScreen() {
   const router = useRouter();
-  const [nombre, setNombre] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [showPassword, setShowPassword] = useState(false);
+  const { register: registerUser } = useAuthStore();
+
+  // ==========================================
+  // 3. CONFIGURACIÓN DE REACT HOOK FORM
+  // Le pasamos el resolver de Zod para que conecte nuestras reglas.
+  // ==========================================
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+  } = useForm<RegisterFormData>({
+    resolver: zodResolver(registerSchema),
+    defaultValues: {
+      name: '',
+      surname: '',
+      phone: '',
+      dni: '',
+      email: '',
+      password: '',
+    },
+  });
+
+  // Esta función solo se llamará si Zod verifica que no hay ningún error
+  const onSubmit = async (data: RegisterFormData) => {
+    try {
+      await registerUser(data);
+      Alert.alert('Éxito', '¡Cuenta creada y registrada con éxito!');
+      router.replace('/(tabs)');
+    } catch (error: any) {
+      Alert.alert('Error', error.message || 'Error al registrar la cuenta.');
+    }
+  };
 
   return (
-    <KeyboardAvoidingView
-      style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-    >
-      <ScrollView contentContainerStyle={styles.scroll} bounces={false}>
-        {/* Header */}
-        <View style={styles.header}>
-          <TouchableOpacity style={styles.backBtn} onPress={() => router.back()}>
-            <Ionicons name="arrow-back" size={24} color="#006953" />
-          </TouchableOpacity>
-        </View>
+    <View style={styles.container}>
+      <Text style={styles.title}>Registro de Gestante</Text>
 
-        <View style={styles.content}>
-          {/* Título */}
-          <Text style={styles.title}>Bienvenida a la familia</Text>
-          <Text style={styles.subtitle}>Crea tu cuenta para empezar a cuidar de tu bebé</Text>
+      {/* ==========================================
+          CAMPO: NOMBRES
+          Usamos <Controller> para "envolver" el TextInput y vincularlo
+          ========================================== */}
+      <Text style={styles.label}>Nombres</Text>
+      <Controller
+        control={control}
+        name="name"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <TextInput
+            style={styles.input}
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+            placeholder="Ingresa tus nombres"
+          />
+        )}
+      />
+      {errors.name && <Text style={styles.errorText}>{errors.name.message}</Text>}
 
-          {/* Form */}
-          <View style={styles.form}>
-            {/* Nombre */}
-            <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Nombre Completo</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Ej. Ana García"
-                placeholderTextColor="rgba(27,28,28,0.4)"
-                value={nombre}
-                onChangeText={setNombre}
-              />
-            </View>
+      {/* ==========================================
+          CAMPO: APELLIDOS
+          ========================================== */}
+      <Text style={styles.label}>Apellidos</Text>
+      <Controller
+        control={control}
+        name="surname"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <TextInput
+            style={styles.input}
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+            placeholder="Ingresa tus apellidos"
+          />
+        )}
+      />
+      {errors.surname && <Text style={styles.errorText}>{errors.surname.message}</Text>}
 
-            {/* Email */}
-            <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Correo Electrónico</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="tu@ejemplo.com"
-                placeholderTextColor="rgba(27,28,28,0.4)"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-              />
-            </View>
+      {/* ==========================================
+          CAMPO: DNI (Numérico, máximo 8 caracteres)
+          ========================================== */}
+      <Text style={styles.label}>DNI (8 dígitos)</Text>
+      <Controller
+        control={control}
+        name="dni"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <TextInput
+            style={styles.input}
+            keyboardType="numeric"
+            maxLength={8}
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+            placeholder="12345678"
+          />
+        )}
+      />
+      {errors.dni && <Text style={styles.errorText}>{errors.dni.message}</Text>}
 
-            {/* Contraseña */}
-            <View style={styles.fieldGroup}>
-              <Text style={styles.label}>Contraseña</Text>
-              <View style={styles.passwordRow}>
-                <TextInput
-                  style={[styles.input, { flex: 1, marginBottom: 0 }]}
-                  placeholder="••••••••"
-                  placeholderTextColor="rgba(27,28,28,0.4)"
-                  value={password}
-                  onChangeText={setPassword}
-                  secureTextEntry={!showPassword}
-                />
-                <TouchableOpacity
-                  style={styles.eyeBtn}
-                  onPress={() => setShowPassword(!showPassword)}
-                >
-                  <Ionicons
-                    name={showPassword ? 'eye-off-outline' : 'eye-outline'}
-                    size={22}
-                    color="#3e4945"
-                  />
-                </TouchableOpacity>
-              </View>
-            </View>
+      {/* ==========================================
+          CAMPO: CELULAR (Numérico, máximo 9 caracteres)
+          ========================================== */}
+      <Text style={styles.label}>Celular (9 dígitos)</Text>
+      <Controller
+        control={control}
+        name="phone"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <TextInput
+            style={styles.input}
+            keyboardType="numeric"
+            maxLength={9}
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+            placeholder="987654321"
+          />
+        )}
+      />
+      {errors.phone && <Text style={styles.errorText}>{errors.phone.message}</Text>}
 
-            {/* Submit */}
-            <TouchableOpacity
-              style={styles.submitBtn}
-              onPress={() => {
-                if (!nombre.trim()) {
-                  Alert.alert('Datos Inválidos', 'Por favor ingresa tu nombre completo.');
-                  return;
-                }
-                if (!email.trim() || !email.includes('@')) {
-                  Alert.alert('Datos Inválidos', 'Por favor ingresa un correo válido.');
-                  return;
-                }
-                if (!password.trim()) {
-                  Alert.alert('Datos Inválidos', 'Por favor ingresa una contraseña.');
-                  return;
-                }
-                router.push({
-                  pathname: '/(auth)/verify-dni',
-                  params: { nombre, email, password }
-                });
-              }}
-              activeOpacity={0.85}
-            >
-              <Text style={styles.submitText}>Crear Cuenta</Text>
-              <Ionicons name="arrow-forward" size={22} color="#FFF" />
-            </TouchableOpacity>
-          </View>
+      {/* ==========================================
+          CAMPO: EMAIL
+          ========================================== */}
+      <Text style={styles.label}>Correo Electrónico</Text>
+      <Controller
+        control={control}
+        name="email"
+        render={({ field: { onChange, onBlur, value } }) => (
+          <TextInput
+            style={styles.input}
+            keyboardType="email-address"
+            autoCapitalize="none"
+            onBlur={onBlur}
+            onChangeText={onChange}
+            value={value}
+            placeholder="correo@tani.org"
+          />
+        )}
+      />
+      {errors.email && <Text style={styles.errorText}>{errors.email.message}</Text>}
 
-          {/* Footer link */}
-          <View style={styles.loginRow}>
-            <TouchableOpacity onPress={() => router.back()}>
-              <Text style={styles.loginLink}>
-                ¿Ya tienes una cuenta?{' '}
-                <Text style={styles.loginLinkBold}>Inicia sesión</Text>
-              </Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </ScrollView>
-    </KeyboardAvoidingView>
+      {/* ==========================================
+          BOTÓN DE REGISTRO
+          Enlazamos la función handleSubmit al evento onPress
+          ========================================== */}
+      <TouchableOpacity 
+        style={styles.button} 
+        onPress={handleSubmit(onSubmit)} 
+        disabled={isSubmitting}
+      >
+        {isSubmitting ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Registrar Cuenta</Text>
+        )}
+      </TouchableOpacity>
+    </View>
   );
 }
 
+// Estilos de la vista
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#fbf9f8',
-  },
-  scroll: {
-    flexGrow: 1,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    paddingTop: Platform.OS === 'ios' ? 56 : 36,
-    paddingBottom: 16,
-    backgroundColor: '#fbf9f8',
-  },
-  backBtn: {
-    width: 40,
-    height: 40,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  content: {
-    flex: 1,
-    paddingHorizontal: 24,
-    paddingBottom: 40,
-    maxWidth: 480,
-    width: '100%',
-    alignSelf: 'center',
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: '800',
-    color: '#1b1c1c',
-    letterSpacing: -0.5,
-    marginBottom: 8,
-  },
-  subtitle: {
-    fontSize: 16,
-    color: '#3e4945',
-    lineHeight: 24,
-    marginBottom: 32,
-  },
-  form: {
-    gap: 0,
-  },
-  fieldGroup: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 13,
-    fontWeight: '600',
-    color: '#3e4945',
-    marginBottom: 6,
-    marginLeft: 4,
-  },
-  input: {
-    backgroundColor: '#eae8e7',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    fontSize: 16,
-    color: '#1b1c1c',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.04,
-    shadowRadius: 4,
-    elevation: 1,
-  },
-  passwordRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: '#eae8e7',
-    borderRadius: 12,
-    overflow: 'hidden',
-  },
-  eyeBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-  },
-  submitBtn: {
-    backgroundColor: '#006953',
-    borderRadius: 12,
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingVertical: 18,
-    paddingHorizontal: 24,
-    marginTop: 8,
-    shadowColor: 'rgba(0,105,83,0.15)',
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 1,
-    shadowRadius: 12,
-    elevation: 6,
-  },
-  submitText: {
-    color: '#FFF',
-    fontSize: 17,
-    fontWeight: '700',
-  },
-  loginRow: {
-    alignItems: 'center',
-    marginTop: 32,
-  },
-  loginLink: {
-    fontSize: 15,
-    color: '#006953',
-    fontWeight: '600',
-  },
-  loginLinkBold: {
-    fontWeight: '800',
-  },
+  container: { flex: 1, padding: 24, justifyContent: 'center', backgroundColor: '#fff' },
+  title: { fontSize: 24, fontWeight: 'bold', marginBottom: 24, textAlign: 'center', color: '#006953' },
+  label: { fontSize: 14, fontWeight: '600', marginBottom: 4, marginTop: 12 },
+  input: { borderWidth: 1, borderColor: '#ccc', borderRadius: 8, padding: 12, fontSize: 16 },
+  errorText: { color: '#ba1a1a', fontSize: 12, marginTop: 4, fontWeight: '500' },
+  button: { backgroundColor: '#006953', padding: 16, borderRadius: 8, alignItems: 'center', marginTop: 24 },
+  buttonText: { color: '#fff', fontSize: 16, fontWeight: 'bold' }
 });
