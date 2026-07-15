@@ -13,30 +13,14 @@ export interface BabyProfile {
   imageUri?: string;
 }
 
+import { calculateAgeInMonths as calcAge, getAgeText as getAgeT } from '../utils/dateUtils';
+
 export const calculateAgeInMonths = (birthDateString: string): number => {
-  const birthDate = new Date(birthDateString);
-  const today = new Date('2026-05-22'); // Fecha del sistema fijada para la demo
-  let months = (today.getFullYear() - birthDate.getFullYear()) * 12;
-  months -= birthDate.getMonth();
-  months += today.getMonth();
-  if (today.getDate() < birthDate.getDate()) {
-    months--;
-  }
-  return Math.max(0, months);
+  return calcAge(birthDateString);
 };
 
 export const getAgeText = (birthDateString: string): string => {
-  const months = calculateAgeInMonths(birthDateString);
-  if (months === 0) return 'Recién nacido';
-  if (months < 12) {
-    return `${months} ${months === 1 ? 'mes' : 'meses'}`;
-  }
-  const years = Math.floor(months / 12);
-  const remainingMonths = months % 12;
-  if (remainingMonths === 0) {
-    return `${years} ${years === 1 ? 'año' : 'años'}`;
-  }
-  return `${years} ${years === 1 ? 'año' : 'años'} ${remainingMonths} ${remainingMonths === 1 ? 'mes' : 'meses'}`;
+  return getAgeT(birthDateString);
 };
 
 interface BabyState {
