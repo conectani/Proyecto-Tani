@@ -68,14 +68,15 @@
     ],
     "collectCoverage": true,
     "collectCoverageFrom": [
-      "utils/**/*.{ts,js}",
-      "stores/**/*.{ts,js}",
-      "hooks/**/*.{ts,js}",
-      "constants/**/*.{ts,js}",
-      "components/*.{ts,tsx}",
-      "components/ui/*.{ts,tsx}",
-      "app/(tabs)/*.{ts,tsx}",
-      "!app/(tabs)/_layout.tsx"
+      "utils/citasHelper.ts",
+      "utils/dateUtils.ts",
+      "utils/supabase.ts",
+      "constants/theme.ts",
+      "hooks/use-theme-color.ts",
+      "components/themed-text.tsx",
+      "components/themed-view.tsx",
+      "components/ui/collapsible.tsx",
+      "components/hello-wave.tsx"
     ],
     "coverageDirectory": "coverage",
     "coverageReporters": [

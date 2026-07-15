@@ -40,6 +40,7 @@ import { ThemedText } from '../components/themed-text';
 import { ThemedView } from '../components/themed-view';
 import { Collapsible } from '../components/ui/collapsible';
 import { useColorScheme } from '../hooks/use-color-scheme';
+import { HelloWave } from '../components/hello-wave';
 
 const { supabase } = require('../utils/supabase');
 
@@ -106,6 +107,20 @@ describe('Pruebas para componentes y modulos base de la app', () => {
 
       // Ahora el contenido debe ser visible
       expect(getByText('Contenido Oculto')).toBeTruthy();
+    });
+  });
+
+  describe('HelloWave Component', () => {
+    test('Debería renderizar el saludo correctamente', () => {
+      const { getByText } = render(<HelloWave />);
+      expect(getByText('👋')).toBeTruthy();
+    });
+  });
+
+  describe('use-color-scheme.ts hook', () => {
+    test('Debería exportar useColorScheme', () => {
+      const realColorScheme = require('../hooks/use-color-scheme');
+      expect(realColorScheme.useColorScheme).toBeDefined();
     });
   });
 
