@@ -9,7 +9,7 @@
     "ios": "expo run:ios",
     "web": "expo start --web",
     "lint": "expo lint",
-    "test": "jest --watchAll=false --coverage",
+    "test": "jest --watchAll=false --coverage --verbose",
     "test:coverage": "jest --coverage"
   },
   "dependencies": {
