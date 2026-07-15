@@ -69,6 +69,11 @@
     "collectCoverage": true,
     "collectCoverageFrom": [
       "utils/**/*.{ts,js}",
+      "stores/**/*.{ts,js}",
+      "hooks/**/*.{ts,js}",
+      "constants/**/*.{ts,js}",
+      "components/*.{ts,tsx}",
+      "components/ui/*.{ts,tsx}",
       "app/(tabs)/*.{ts,tsx}",
       "!app/(tabs)/_layout.tsx"
     ],
