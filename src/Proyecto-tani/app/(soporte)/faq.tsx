@@ -2,14 +2,13 @@ import React, { Suspense, lazy } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, Image, Linking
+
 } from 'react-native';
 import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
-const ListadoPreguntasPesado = lazy(() => import('../../components/ListadoPreguntasPesado'));
-import FaqSkeletonPlaceholder from '../../components/FaqSkeletonPlaceholder';
+
 
 export default function FaqScreen() {
   const router = useRouter();
@@ -45,11 +44,15 @@ export default function FaqScreen() {
         </View>
 
         {/* =========================================================================
-            SOPORTE DE CARGA INTEGRADO (INC-09 & INC-11)
-            Suspense atrapa el componente perezoso y muestra el esqueleto de diseño
+            RENDERIZADO CON LAZY Y SUSPENSE
+            Muestra un spinner de carga mientras se monta el listado pesado de preguntas
             ========================================================================= */}
-        {}
-        <Suspense fallback={<FaqSkeletonPlaceholder />}>
+        <Suspense fallback={
+          <View style={styles.loaderContainer}>
+            <ActivityIndicator size="large" color={Colors.light.primary} />
+            <Text style={styles.loaderText}>Cargando información técnica...</Text>
+          </View>
+        }>
           <ListadoPreguntasPesado />
         </Suspense>
 
@@ -153,6 +156,7 @@ const styles = StyleSheet.create({
     color: Colors.light.textSecondary,
     lineHeight: 24,
   },
+
   supportSection: {
     backgroundColor: '#FFF',
     borderRadius: 20,
