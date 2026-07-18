@@ -50,7 +50,7 @@ const ExpoSecureStoreAdapter = {
 const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 
-if (!supabaseUrl || supabaseUrl.includes('tu-proyecto') || supabaseUrl === 'https://tu-proyecto.supabase.co') {
+if (!supabaseUrl || supabaseUrl.includes('tu-proyecto') || supabaseUrl === '[https://tu-proyecto.supabase.co](https://tu-proyecto.supabase.co)') {
   throw new Error(
     'Falta EXPO_PUBLIC_SUPABASE_URL. Por favor, asegúrate de que el archivo .env de este aplicativo esté bien configurado con la URL de tu proyecto de Supabase.'
   );
@@ -62,11 +62,12 @@ if (!supabaseAnonKey || supabaseAnonKey === 'tu-anon-key') {
   );
 }
 
+// Inicializamos el cliente garantizando persistencia óptima y renovación de token automática
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     storage: ExpoSecureStoreAdapter,
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: false,
+    autoRefreshToken: true,   // ACTIVADO: Renueva el token automáticamente antes de expirar
+    persistSession: true,      // ACTIVADO: Conserva la sesión en el storage seguro elegido
+    detectSessionInUrl: false, // ACTIVADO: Evita redirecciones conflictivas en la app móvil
   },
 });
