@@ -18,7 +18,7 @@ import { Video, ResizeMode } from 'expo-av';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import NetInfo from '@react-native-community/netinfo';
 import { syncOfflineQueue } from '@/utils/syncManager';
-
+import ErrorBoundary from '../components/ErrorBoundary'; 
 
 SplashScreen.preventAutoHideAsync();
 
@@ -82,6 +82,7 @@ export default function RootLayout() {
   }
 
   return (
+    <ErrorBoundary>
     <SafeAreaProvider>
       <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
         <Stack>
@@ -101,6 +102,7 @@ export default function RootLayout() {
         <StatusBar style="auto" />
       </ThemeProvider>
     </SafeAreaProvider>
+    </ErrorBoundary>
   );
 }
 
