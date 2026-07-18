@@ -1,38 +1,23 @@
-import React from 'react';
+import React, { Suspense, lazy } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
   View, Text, StyleSheet, ScrollView,
-  TouchableOpacity, Image, Linking,
+  TouchableOpacity, Image, Linking
 } from 'react-native';
 import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 
-const FAQS = [
-  {
-    pregunta: '¿Cómo agendo mi primera consulta prenatal?',
-    respuesta: "Puedes hacerlo desde la pestaña 'Citas' seleccionando a tu especialista preferido o la fecha más cercana.",
-  },
-  {
-    pregunta: '¿Puedo cancelar una cita el mismo día?',
-    respuesta: 'Recomendamos cancelar con al menos 24 horas de anticipación para permitir que otra madre tome el espacio.',
-  },
-  {
-    pregunta: '¿Cómo cambio mi contraseña?',
-    respuesta: "Accede a tu perfil, selecciona 'Seguridad' y sigue los pasos para restablecer tu clave.",
-  },
-  {
-    pregunta: '¿Puedo usar la app sin internet?',
-    respuesta: 'Ciertas funciones como el calendario de citas están disponibles offline, pero los chats requieren conexión.',
-  },
-];
+const ListadoPreguntasPesado = lazy(() => import('../../components/ListadoPreguntasPesado'));
+import FaqSkeletonPlaceholder from '../../components/FaqSkeletonPlaceholder';
 
 export default function FaqScreen() {
   const router = useRouter();
 
   return (
     <SafeAreaView style={styles.safeArea}>
-      {/* Header */}
+      {/* Header de la Aplicación */}
+      {}
       <View style={styles.header}>
         <View style={styles.headerLeft}>
           <Image
@@ -51,7 +36,7 @@ export default function FaqScreen() {
 
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
 
-        {/* Hero */}
+        {/* Hero de Bienvenida */}
         <View style={styles.hero}>
           <Text style={styles.heroTitle}>Preguntas Frecuentes Completas</Text>
           <Text style={styles.heroSubtitle}>
@@ -59,18 +44,17 @@ export default function FaqScreen() {
           </Text>
         </View>
 
-        {/* FAQ List */}
-        <View style={styles.faqList}>
-          {FAQS.map((faq, idx) => (
-            <View key={idx} style={styles.faqItem}>
-              <Text style={styles.faqQuestion}>{faq.pregunta}</Text>
-              <Text style={styles.faqAnswer}>{faq.respuesta}</Text>
-              {idx < FAQS.length - 1 && <View style={styles.divider} />}
-            </View>
-          ))}
-        </View>
+        {/* =========================================================================
+            SOPORTE DE CARGA INTEGRADO (INC-09 & INC-11)
+            Suspense atrapa el componente perezoso y muestra el esqueleto de diseño
+            ========================================================================= */}
+        {}
+        <Suspense fallback={<FaqSkeletonPlaceholder />}>
+          <ListadoPreguntasPesado />
+        </Suspense>
 
-        {/* Support Section */}
+        {/* Sección de Soporte y Donaciones */}
+        {}
         <View style={styles.supportSection}>
           <Text style={styles.supportTitle}>Apoya a Familia Tani</Text>
           <Text style={styles.supportSubtitle}>Tu contribución ayuda a que más madres reciban atención de calidad.</Text>
@@ -86,11 +70,12 @@ export default function FaqScreen() {
           </View>
         </View>
 
-        {/* WhatsApp FAB area */}
+        {/* Espacio para que el botón flotante no tape contenido */}
         <View style={{ height: 80 }} />
       </ScrollView>
 
-      {/* WhatsApp-style FAB */}
+      {/* Botón flotante estilo WhatsApp */}
+      {}
       <TouchableOpacity 
         style={styles.fab}
         onPress={() => Linking.openURL('https://wa.me/51900800700?text=Hola%20Familia%20Tani,%20necesito%20ayuda%20con%20una%20cita.')}
@@ -167,37 +152,6 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: Colors.light.textSecondary,
     lineHeight: 24,
-  },
-  faqList: {
-    backgroundColor: '#FFF',
-    borderRadius: 20,
-    padding: 24,
-    marginBottom: 24,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.04,
-    shadowRadius: 12,
-    elevation: 2,
-  },
-  faqItem: {
-    marginBottom: 4,
-  },
-  faqQuestion: {
-    fontSize: 16,
-    fontWeight: '700',
-    color: '#1b1c1c',
-    marginBottom: 8,
-  },
-  faqAnswer: {
-    fontSize: 14,
-    color: Colors.light.textSecondary,
-    lineHeight: 22,
-    marginBottom: 16,
-  },
-  divider: {
-    height: 1,
-    backgroundColor: 'rgba(190,201,195,0.3)',
-    marginBottom: 16,
   },
   supportSection: {
     backgroundColor: '#FFF',
