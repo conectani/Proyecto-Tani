@@ -86,4 +86,3 @@ jobs:
         args: --severity-threshold=high
         directory: src/Proyecto-tani-admin
 
-
