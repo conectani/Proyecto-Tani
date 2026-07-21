@@ -3,9 +3,16 @@
 
 # ConnecTani: Sistema de Gestión de Salud Materno-Infantil
 
+[![ConnecTani DevSecOps Pipeline](https://github.com/conectani/Proyecto-Tani/actions/workflows/ci.yml/badge.svg)](https://github.com/conectani/Proyecto-Tani/actions/workflows/ci.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=conectani_Proyecto-Tani&metric=alert_status)](https://sonarcloud.io/dashboard?id=conectani_Proyecto-Tani)
+
+## 🚀 Demostración en Vivo (Live Demos)
+- **Web Oficial en cPanel Hosting Real:** [https://aramotech.com/tani](https://aramotech.com/tani)
+- **Servidor Cloud Azure App Service:** [https://connectani-app-service-gxetgrhjgwgabpd7.southcentralus-01.azurewebsites.net](https://connectani-app-service-gxetgrhjgwgabpd7.southcentralus-01.azurewebsites.net)
+
 **Universidad:** Universidad Tecnológica del Perú (UTP)
 **Curso:** Herramientas de Desarrollo
-**Docente:** [Coloca el nombre de tu profesor aquí]
+**Docente:** Jose Luis Milla Flores
 **Estudiantes:**
 - Rodrigo Ricardo Mallqui Ordoñez (Dev 1)
 - Alfredo Huchupe Lira (Dev 2)
@@ -13,8 +20,8 @@
 - Wilver M. (Dev 4 - Auditor)
 - Luis Fernando Risco (Dev 5)
 
-**Fecha de inicio:** [Fecha de inicio]
-**Fecha de finalización:** [Fecha de entrega]
+**Fecha de inicio:** 31 de marzo de 2026
+**Fecha de finalización:** 21 de julio de 2026
 
 ## Agradecimiento y Dedicatoria
 Dedicado a la Asociación Taller de los Niños (TANI) por permitirnos contribuir a su noble labor en el distrito de San Juan de Lurigancho.
