@@ -107,11 +107,15 @@ jobs:
         password: ${{ secrets.AZURE_ACR_PASSWORD }}
 
     - name: 3. Construccion de Imagen Docker Multi-etapa
-      run: docker build -t ${{ secrets.AZURE_ACR_SERVER }}/tani-app:${{ github.sha }} .
+      env:
+        AZURE_ACR_SERVER: ${{ secrets.AZURE_ACR_SERVER }}
+      run: docker build -t "$AZURE_ACR_SERVER/tani-app:${{ github.sha }}" .
 
     - name: 4. Publicacion de Imagen en Registro de Azure (Push to ACR)
       continue-on-error: false
-      run: docker push ${{ secrets.AZURE_ACR_SERVER }}/tani-app:${{ github.sha }}
+      env:
+        AZURE_ACR_SERVER: ${{ secrets.AZURE_ACR_SERVER }}
+      run: docker push "$AZURE_ACR_SERVER/tani-app:${{ github.sha }}"
 
     - name: 5. Despliegue Continuo en Azure App Service for Containers
       uses: azure/webapps-deploy@81729dd7bbef60b3724c965b93198ae4a29a0665 # v3

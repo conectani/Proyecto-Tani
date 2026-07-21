@@ -24,8 +24,8 @@ export default function MiCarnetScreen() {
     if (clean.length >= 5) return clean.slice(0, 5);
     let hash = 0;
     for (let i = 0; i < rawId.length; i++) {
-      hash = (hash << 5) - hash + rawId.charCodeAt(i);
-      hash |= 0;
+      hash = (hash << 5) - hash + (rawId.codePointAt(i) || 0);
+      hash = Math.trunc(hash);
     }
     return String(10000 + (Math.abs(hash) % 90000));
   };
