@@ -97,8 +97,7 @@ jobs:
         working-directory: src/Proyecto-tani
     steps:
     - name: 1. Checkout del Codigo Fuente
-      uses: actions/checkout@v3
-
+      uses: actions/checkout@v4
     - name: 2. Autenticacion en Azure Container Registry (ACR)
       uses: azure/docker-login@v1
       continue-on-error: true
