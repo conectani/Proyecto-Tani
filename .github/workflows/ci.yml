@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [ "develop", "main" ]
   push:
-    branches: [ "develop", "main" ]
+    branches: [ "develop", "main", "feature/**" ]
 
 jobs:
   build-and-qa-app:
@@ -99,12 +99,11 @@ jobs:
       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
     - name: 2. Autenticacion en Azure Container Registry (ACR)
-      uses: azure/docker-login@16198f1f496739665c36142144ef20b70d76bfcd # v2
-      continue-on-error: true
-      with:
-        login-server: ${{ secrets.AZURE_ACR_SERVER }}
-        username: ${{ secrets.AZURE_ACR_USERNAME }}
-        password: ${{ secrets.AZURE_ACR_PASSWORD }}
+      env:
+        AZURE_ACR_SERVER: ${{ secrets.AZURE_ACR_SERVER }}
+        AZURE_ACR_USERNAME: ${{ secrets.AZURE_ACR_USERNAME }}
+        AZURE_ACR_PASSWORD: ${{ secrets.AZURE_ACR_PASSWORD }}
+      run: echo "$AZURE_ACR_PASSWORD" | docker login "$AZURE_ACR_SERVER" --username "$AZURE_ACR_USERNAME" --password-stdin
 
     - name: 3. Construccion de Imagen Docker Multi-etapa
       env:
@@ -113,16 +112,12 @@ jobs:
         docker build -t "$AZURE_ACR_SERVER/tani-app:${{ github.sha }}" -t "$AZURE_ACR_SERVER/tani-app:latest" .
 
     - name: 4. Publicacion de Imagen en Registro de Azure (Push to ACR)
-      continue-on-error: true
       env:
         AZURE_ACR_SERVER: ${{ secrets.AZURE_ACR_SERVER }}
       run: |
         docker push "$AZURE_ACR_SERVER/tani-app:${{ github.sha }}"
         docker push "$AZURE_ACR_SERVER/tani-app:latest"
 
-    - name: 5. Despliegue Continuo en Azure App Service for Containers
-      uses: azure/webapps-deploy@2b3d01448db41f0f06530f77259168233f23a260 # v2.2.1
-      continue-on-error: true
-      with:
-        app-name: 'connectani-app-service'
-        images: '${{ secrets.AZURE_ACR_SERVER }}/tani-app:${{ github.sha }}'
+    # Nota: el App Service esta vinculado a tani-app:latest desde el Centro de
+    # Implementacion (webhook de ACR); al publicarse una nueva :latest, Azure
+    # re-descarga la imagen. No se necesita el paso azure/webapps-deploy.
