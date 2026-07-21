@@ -1,12 +1,13 @@
 import React, { Suspense, lazy } from 'react';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import {
-  View, Text, StyleSheet, ScrollView,
-
+  View, Text, StyleSheet, ScrollView, Image, TouchableOpacity, ActivityIndicator, Linking
 } from 'react-native';
 import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
+
+const ListadoPreguntasPesado = lazy(() => import('@/components/ListadoPreguntasPesado'));
 
 
 

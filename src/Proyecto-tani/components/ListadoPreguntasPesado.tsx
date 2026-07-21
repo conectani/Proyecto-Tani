@@ -26,7 +26,7 @@ export default function ListadoPreguntasPesado() {
   return (
     <View style={styles.faqList}>
       {FAQS.map((faq, idx) => (
-        <View key={idx} style={styles.faqItem}>
+        <View key={faq.pregunta} style={styles.faqItem}>
           <Text style={styles.faqQuestion}>{faq.pregunta}</Text>
           <Text style={styles.faqAnswer}>{faq.respuesta}</Text>
           {idx < FAQS.length - 1 && <View style={styles.divider} />}

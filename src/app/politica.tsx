@@ -107,7 +107,7 @@ export default function PoliticaScreen() {
         </View>
 
         {SECTIONS.map((sec, i) => (
-          <View key={i} style={[s.card, { backgroundColor: sec.bg }]}>
+          <View key={sec.title} style={[s.card, { backgroundColor: sec.bg }]}>
             <View style={s.cardHead}>
               <View style={s.iconBox}>
                 <Ionicons name={sec.icon} size={20} color={sec.accent} />

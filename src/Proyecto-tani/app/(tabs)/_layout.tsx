@@ -3,6 +3,22 @@ import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+function renderHomeIcon({ color }: { color: string }) {
+  return <Ionicons name="home" size={24} color={color} />;
+}
+
+function renderCitasIcon({ color }: { color: string }) {
+  return <Ionicons name="calendar" size={24} color={color} />;
+}
+
+function renderAprendeIcon({ color }: { color: string }) {
+  return <Ionicons name="book" size={24} color={color} />;
+}
+
+function renderSoporteIcon({ color }: { color: string }) {
+  return <Ionicons name="chatbubbles" size={24} color={color} />;
+}
+
 export default function TabLayout() {
   // Usa los insets del sistema para que el tab bar respete
   // tanto la barra de estado arriba como los botones de navegación de Android abajo
@@ -36,36 +52,28 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Inicio',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="home" size={24} color={color} />
-          ),
+          tabBarIcon: renderHomeIcon,
         }}
       />
       <Tabs.Screen
         name="citas"
         options={{
           title: 'Citas',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="calendar" size={24} color={color} />
-          ),
+          tabBarIcon: renderCitasIcon,
         }}
       />
       <Tabs.Screen
         name="aprende"
         options={{
           title: 'Aprende',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="book" size={24} color={color} />
-          ),
+          tabBarIcon: renderAprendeIcon,
         }}
       />
       <Tabs.Screen
         name="soporte"
         options={{
           title: 'Soporte',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="chatbubbles" size={24} color={color} />
-          ),
+          tabBarIcon: renderSoporteIcon,
         }}
       />
     </Tabs>

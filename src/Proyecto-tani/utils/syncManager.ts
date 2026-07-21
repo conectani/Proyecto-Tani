@@ -10,13 +10,22 @@ interface SyncTask {
   data: any;
 }
 
+function generateSyncTaskId(): string {
+  if (typeof globalThis.crypto?.getRandomValues === 'function') {
+    const array = new Uint32Array(2);
+    globalThis.crypto.getRandomValues(array);
+    return Array.from(array, num => num.toString(36)).join('');
+  }
+  return `${Date.now().toString(36)}-${Math.floor(Date.now() * 0.001).toString(36)}`;
+}
+
 // 1. Guardar la tarea en la memoria del celular si no hay internet
 export async function saveTaskOffline(table: string, action: 'INSERT' | 'UPDATE', data: any) {
   try {
     const existingQueueStr = await AsyncStorage.getItem(QUEUE_STORAGE_KEY);
     const queue: SyncTask[] = existingQueueStr ? JSON.parse(existingQueueStr) : [];
     const newTask: SyncTask = {
-      id: Math.random().toString(36).substring(7),
+      id: generateSyncTaskId(),
       table,
       action,
       data
