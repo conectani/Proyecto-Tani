@@ -43,7 +43,7 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     - name: 6. Analisis de Seguridad de Dependencias (Snyk SCA)
-      uses: snyk/actions/node@b887d7806c54dac13edd679025e74d16d0829d54
+      uses: snyk/actions/node@9adf32b1121593767fc3c057af55b55db032dc04
       continue-on-error: true
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -78,7 +78,7 @@ jobs:
       run: npm run lint
 
     - name: 5. Analisis de Seguridad de Dependencias (Snyk SCA)
-      uses: snyk/actions/node@b887d7806c54dac13edd679025e74d16d0829d54
+      uses: snyk/actions/node@9adf32b1121593767fc3c057af55b55db032dc04
       continue-on-error: true
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -123,34 +123,3 @@ jobs:
       with:
         app-name: 'connectani-app-service'
         images: '${{ secrets.AZURE_ACR_SERVER }}/tani-app:${{ github.sha }}'
-
-  deploy-to-cpanel-hosting:
-    name: Despliegue Continuo (CD a cPanel Hosting Real)
-    needs: build-and-qa-app
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || contains(github.ref, 'feature/')
-    runs-on: ubuntu-latest
-    steps:
-    - name: 1. Checkout del Codigo Fuente
-      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
-
-    - name: 2. Configurar Node.js (v20)
-      uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v3.8.0
-      with:
-        node-version: '20'
-
-    - name: 3. Compilacion de Aplicacion Web para Produccion
-      run: |
-        cd src/Proyecto-tani
-        npm ci
-        npx expo export --platform web
-        node scripts/fix-web-scripts.js
-
-    - name: 4. Despliegue Automatico via FTP a cPanel (aramotech.com/tani)
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
-      continue-on-error: true
-      with:
-        server: ${{ secrets.FTP_SERVER }}
-        username: ${{ secrets.FTP_USERNAME }}
-        password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: ./src/Proyecto-tani/dist/
-        server-dir: /public_html/tani/
