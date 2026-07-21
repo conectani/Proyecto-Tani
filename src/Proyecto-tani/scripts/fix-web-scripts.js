@@ -19,18 +19,30 @@ if (fs.existsSync(distDir)) {
   walkDir(distDir, (filePath) => {
     if (path.extname(filePath) === '.html') {
       let content = fs.readFileSync(filePath, 'utf8');
-      if (content.includes('<script src="/tani/_expo/static/js/web/')) {
+      let modified = false;
+
+      // Convertir todas las rutas absolutas de /_expo/ o /tani/_expo/ a relativas ./_expo/
+      if (content.includes('/_expo/') || content.includes('/tani/_expo/')) {
+        content = content
+          .replaceAll('src="/tani/_expo/', 'src="./_expo/')
+          .replaceAll('href="/tani/_expo/', 'href="./_expo/')
+          .replaceAll('src="/_expo/', 'src="./_expo/')
+          .replaceAll('href="/_expo/', 'href="./_expo/');
+        modified = true;
+      }
+
+      if (!content.includes('type="module"')) {
         content = content.replaceAll(
-          '<script src="/tani/_expo/static/js/web/',
-          '<script type="module" src="/tani/_expo/static/js/web/'
-        );
-        fs.writeFileSync(filePath, content, 'utf8');
-        console.log(`Corregido script tag en: ${path.relative(distDir, filePath)}`);
-      } else if (content.includes('<script src="/_expo/static/js/web/')) {
-        content = content.replaceAll(
+          '<script src="./_expo/static/js/web/',
+          '<script type="module" src="./_expo/static/js/web/'
+        ).replaceAll(
           '<script src="/_expo/static/js/web/',
-          '<script type="module" src="/_expo/static/js/web/'
+          '<script type="module" src="./_expo/static/js/web/'
         );
+        modified = true;
+      }
+
+      if (modified) {
         fs.writeFileSync(filePath, content, 'utf8');
         console.log(`Corregido script tag en: ${path.relative(distDir, filePath)}`);
       }
