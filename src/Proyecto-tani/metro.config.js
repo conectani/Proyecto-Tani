@@ -17,4 +17,9 @@ config.resolver.resolveRequest = (context, moduleName, platform) => {
   return require('metro-resolver').resolve(context, moduleName, platform);
 };
 
+// Limitar workers para evitar consumo excesivo de memoria en entornos de CI/Build (como Render)
+if (process.env.RENDER || process.env.CI) {
+  config.maxWorkers = 1;
+}
+
 module.exports = config;
