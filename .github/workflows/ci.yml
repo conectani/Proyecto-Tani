@@ -34,7 +34,7 @@ jobs:
       run: npm run test
 
     - name: 5. Analisis de Calidad de Codigo (SonarCloud)
-      uses: SonarSource/sonarcloud-github-action@v2.3.0
+      uses: SonarSource/sonarcloud-github-action@e44258b1095d3a436bce9434b9d4c7908b1a50c8 # v2.3.0
       continue-on-error: true
       with:
         projectBaseDir: src/Proyecto-tani
@@ -121,3 +121,35 @@ jobs:
     # Nota: el App Service esta vinculado a tani-app:latest desde el Centro de
     # Implementacion (webhook de ACR); al publicarse una nueva :latest, Azure
     # re-descarga la imagen. No se necesita el paso azure/webapps-deploy.
+
+  deploy-to-cpanel-hosting:
+    name: Despliegue Continuo (CD a cPanel Hosting Real)
+    needs: build-and-qa-app
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || contains(github.ref, 'feature/')
+    runs-on: ubuntu-latest
+    steps:
+    - name: 1. Checkout del Codigo Fuente
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+    - name: 2. Configurar Node.js (v20)
+      uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v3.8.0
+      with:
+        node-version: '20'
+
+    - name: 3. Compilacion de Aplicacion Web para Produccion
+      run: |
+        cd src/Proyecto-tani
+        npm ci
+        npx expo export --platform web
+        node scripts/fix-web-scripts.js
+
+    - name: 4. Despliegue Automatico via FTP a cPanel (aramotech.com/tani)
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      continue-on-error: true
+      with:
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ./src/Proyecto-tani/dist/
+        server-dir: /public_html/tani/
+
