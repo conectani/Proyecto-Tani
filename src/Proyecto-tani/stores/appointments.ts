@@ -229,7 +229,7 @@ export const useAppointmentStore = create<AppointmentState>()(
         };
 
         // Actualizar la nota rápida en la cita local y remota
-        const firstDetailText = note.details.filter(d => !d.completed)[0]?.text || note.details[0]?.text || null;
+        const firstDetailText = note.details.find(d => !d.completed)?.text || note.details[0]?.text || null;
         
         await supabase
           .from('citas')
@@ -283,7 +283,7 @@ export const useAppointmentStore = create<AppointmentState>()(
           const targetNote = updatedNotes.find(n => n.id === id);
           let updatedApps = state.appointments;
           if (targetNote) {
-            const firstDetailText = targetNote.details.filter(d => !d.completed)[0]?.text || targetNote.details[0]?.text || null;
+            const firstDetailText = targetNote.details.find(d => !d.completed)?.text || targetNote.details[0]?.text || null;
             
             // Sincronizar nota rápida en la cita
             supabase

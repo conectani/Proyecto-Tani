@@ -9,10 +9,6 @@ interface State {
   error: Error | null;
 }
 export default class ErrorBoundary extends Component<Props, State> {
-  props: any;
-  setState(arg0: { hasError: boolean; error: null; }) {
-      throw new Error('Method not implemented.');
-  }
   public state: State = {
     hasError: false,
     error: null
@@ -32,7 +28,7 @@ export default class ErrorBoundary extends Component<Props, State> {
     // Sentry.captureException(error);
   }
   // 3. Permite al usuario "reiniciar" la app tras el error
-  private handleReset = () => {
+  private readonly handleReset = () => {
     this.setState({ hasError: false, error: null });
   };
   public render() {
