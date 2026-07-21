@@ -5,5 +5,8 @@ module.exports = [
   ...(Array.isArray(expoConfig) ? expoConfig : [expoConfig]),
   {
     ignores: ['dist/*'],
+    rules: {
+      'import/no-unresolved': 'off',
+    },
   },
 ];
