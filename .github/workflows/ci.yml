@@ -34,7 +34,7 @@ jobs:
       run: npm run test
 
     - name: 5. Analisis de Calidad de Codigo (SonarCloud)
-      uses: SonarSource/sonarcloud-github-action@e44258b1095d3a436bce9434b9d4c7908b1a50c8 # v2.3.0
+      uses: SonarSource/sonarcloud-github-action@e44258b109568baa0df60ed515909fc6c72cba92 # v2.3.0
       continue-on-error: true
       with:
         projectBaseDir: src/Proyecto-tani
@@ -131,10 +131,12 @@ jobs:
     - name: 1. Checkout del Codigo Fuente
       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
-    - name: 2. Configurar Node.js (v20)
+    # Node 22 obligatorio: el render estatico ejecuta @supabase/realtime-js y
+    # necesita el WebSocket global nativo (inexistente en Node 20).
+    - name: 2. Configurar Node.js (v22)
       uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v3.8.0
       with:
-        node-version: '20'
+        node-version: '22'
 
     - name: 3. Compilacion de Aplicacion Web para Produccion
       run: |
@@ -144,7 +146,7 @@ jobs:
         node scripts/fix-web-scripts.js
 
     - name: 4. Despliegue Automatico via FTP a cPanel (aramotech.com/tani)
-      uses: SamKirkland/FTP-Deploy-Action@18ef4195155f84d668c2ee03e488d752c0bf7123 # v4.3.5
+      uses: SamKirkland/FTP-Deploy-Action@8e83cea8672e3fbcbb9fdafff34debf6ae4c5f65 # v4.3.5
       continue-on-error: true
       with:
         server: ${{ secrets.FTP_SERVER }}

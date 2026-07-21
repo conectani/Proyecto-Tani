@@ -12,7 +12,8 @@ FROM nginx:1.25.4-alpine AS runner
 COPY --from=builder /app/dist /usr/share/nginx/html
 COPY nginx.conf /etc/nginx/conf.d/default.conf
 
+# Un SOLO puerto expuesto: con dos EXPOSE la deteccion de puerto de Azure App
+# Service se vuelve ambigua y produce 503 (nginx igual escucha 80 y 8080).
 EXPOSE 80
-EXPOSE 8080
 
 CMD ["nginx", "-g", "daemon off;"]
