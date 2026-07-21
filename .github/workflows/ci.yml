@@ -43,7 +43,7 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     - name: 6. Analisis de Seguridad de Dependencias (Snyk SCA)
-      uses: snyk/actions/node@b887d7806c54dac13edd679025e74d16d0829d54
+      uses: snyk/actions/node@9adf32b1121593767fc3c057af55b55db032dc04
       continue-on-error: true
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -78,7 +78,7 @@ jobs:
       run: npm run lint
 
     - name: 5. Analisis de Seguridad de Dependencias (Snyk SCA)
-      uses: snyk/actions/node@b887d7806c54dac13edd679025e74d16d0829d54
+      uses: snyk/actions/node@9adf32b1121593767fc3c057af55b55db032dc04
       continue-on-error: true
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
