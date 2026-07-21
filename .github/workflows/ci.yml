@@ -86,7 +86,6 @@ jobs:
         args: --severity-threshold=high
         directory: src/Proyecto-tani-admin
 
-
   deploy-to-azure-container-ops:
     name: Despliegue Continuo (CD a Azure Container Registry & Web App)
     needs: build-and-qa-app
@@ -123,5 +122,3 @@ jobs:
       with:
         app-name: 'connectani-app-service'
         images: '${{ secrets.AZURE_ACR_SERVER }}/tani-app:${{ github.sha }}'
-
-
