@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import { useAdminStore, calculateAgeInMonths, getAgeText, MotherProfile, Appointment } from '@/stores/adminMothers';
 import DateTimePicker from '@react-native-community/datetimepicker';
+import { sanitizeInput } from '../../utils/sanitizer';
 
 const PRIMARY = '#006953';
 const TEXT = '#1b1c1c';
@@ -82,7 +83,7 @@ export default function AdminMothersScreen() {
     }
 
     const formattedBirthDate = newBabyBirthDate.toISOString().split('T')[0];
-    
+
     addMother({
       name: momName.trim(),
       surname: momSurname.trim(),
@@ -99,7 +100,7 @@ export default function AdminMothersScreen() {
     });
 
     Alert.alert('Registro Exitoso', 'La madre y el bebé han sido ingresados al sistema de TANI.');
-    
+
     // Resetear form
     setMomName('');
     setMomSurname('');
@@ -115,17 +116,17 @@ export default function AdminMothersScreen() {
   // Filtrado de madres
   const filteredMothers = mothers.filter(m => {
     // 1. Filtro de búsqueda (nombre madre, dni, o nombre bebe)
-    const matchesSearch = 
+    const matchesSearch =
       m.name.toLowerCase().includes(search.toLowerCase()) ||
       m.surname.toLowerCase().includes(search.toLowerCase()) ||
       m.dni.includes(search) ||
       m.babies.some(b => b.name.toLowerCase().includes(search.toLowerCase()));
-    
+
     if (!matchesSearch) return false;
 
     // 2. Filtro de grupo de edad del bebé
     if (selectedGroup === 'all') return true;
-    
+
     return m.babies.some(b => {
       const age = calculateAgeInMonths(b.birthDate);
       if (selectedGroup === '0-3') return age <= 3;
@@ -194,6 +195,10 @@ export default function AdminMothersScreen() {
       Alert.alert('Campo Obligatorio', 'Por favor ingresa el nombre del especialista.');
       return;
     }
+    const handleSearch = (text: string) => {
+      const cleanSearch = sanitizeInput(text); // LIMPIAR LA ENTRADA
+      setSearchQuery(cleanSearch);
+    };
 
     const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
     const day = groupDate.getDate();
@@ -268,14 +273,14 @@ export default function AdminMothersScreen() {
             <Text style={styles.headerSubtitle}>Seguimiento clínico y agendado por hitos</Text>
           </View>
           <View style={{ flexDirection: 'row', gap: 6 }}>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={[styles.addMotherHeaderBtn, { backgroundColor: '#6c757d' }]}
               onPress={() => setShowGroupSchedModal(true)}
             >
               <Ionicons name="people-outline" size={16} color="#FFF" />
               <Text style={styles.addMotherHeaderBtnText}>Prog. Grupal</Text>
             </TouchableOpacity>
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.addMotherHeaderBtn}
               onPress={() => setShowRegisterModal(true)}
             >
@@ -323,7 +328,7 @@ export default function AdminMothersScreen() {
       </View>
 
       {/* Directorio de Madres */}
-        {/* Directorio de Madres Optimizado con FlatList */}
+      {/* Directorio de Madres Optimizado con FlatList */}
       {filteredMothers.length === 0 ? (
         <View style={styles.emptyContainer}>
           <Ionicons name="people-outline" size={48} color={TEXT_SECONDARY} style={{ opacity: 0.4, marginBottom: 12 }} />
@@ -335,13 +340,13 @@ export default function AdminMothersScreen() {
           keyExtractor={(mother) => mother.id}
           contentContainerStyle={styles.listContainer}
           showsVerticalScrollIndicator={false}
-          
+
           // --- PARÁMETROS DE RENDIMIENTO ---
           initialNumToRender={10}       // Cuántos elementos cargar al inicio (lo que cabe en pantalla)
           maxToRenderPerBatch={10}      // Cuántos elementos procesar por lote al hacer scroll
           windowSize={5}                // Cuánta memoria reservar fuera de la pantalla (5 pantallas de alto)
           removeClippedSubviews={true}  // Desmontar las tarjetas que salieron de pantalla (ahorra RAM)
-          
+
           // Renderizado de cada tarjeta (Mismo diseño pero modular)
           renderItem={({ item: mother }) => {
             const motherApps = getMotherAppointments(mother.id);
@@ -353,7 +358,7 @@ export default function AdminMothersScreen() {
                 <View style={styles.motherInfoCol}>
                   <Text style={styles.motherName}>{mother.name} {mother.surname}</Text>
                   <Text style={styles.motherDni}>DNI: {mother.dni} • Cel: {mother.phone}</Text>
-                  
+
                   {/* Bebés */}
                   <View style={styles.babiesBadgeRow}>
                     {mother.babies.map(baby => {
@@ -363,7 +368,7 @@ export default function AdminMothersScreen() {
                       if (age <= 3) { ageBadgeColor = '#e3f2fd'; ageBadgeTextCol = '#1565c0'; }
                       else if (age <= 6) { ageBadgeColor = '#fff3e0'; ageBadgeTextCol = '#e65100'; }
                       else if (age <= 12) { ageBadgeColor = '#fff8e1'; ageBadgeTextCol = '#f57f17'; }
-                      
+
                       return (
                         <View key={baby.id} style={[styles.babyBadge, { backgroundColor: ageBadgeColor }]}>
                           <Text style={[styles.babyBadgeText, { color: ageBadgeTextCol }]}>
@@ -403,14 +408,14 @@ export default function AdminMothersScreen() {
             </View>
 
             <ScrollView contentContainerStyle={styles.modalContent} showsVerticalScrollIndicator={false}>
-              
+
               {/* Perfil Madre */}
               <View style={styles.modalProfileCard}>
                 <Text style={styles.modalMomName}>{selectedMother.name} {selectedMother.surname}</Text>
                 <Text style={styles.modalMomSub}>DNI: {selectedMother.dni}</Text>
-                
+
                 <View style={styles.momDivider} />
-                
+
                 <View style={styles.momContactRow}>
                   <Ionicons name="call" size={16} color={PRIMARY} />
                   <Text style={styles.momContactText}>{selectedMother.phone}</Text>
@@ -456,15 +461,15 @@ export default function AdminMothersScreen() {
                         <Text style={[styles.modalAppTipo, { color: app.color }]}>{app.tipo}</Text>
                         <Text style={styles.modalAppTitle}>{app.titulo}</Text>
                       </View>
-                      <View style={[styles.statusBadge, 
-                        app.pagoEstado === 'Confirmado' && { backgroundColor: '#e6f3ef' },
-                        app.pagoEstado === 'Verificando' && { backgroundColor: '#fff8e1' },
-                        app.pagoEstado === 'Pendiente' && { backgroundColor: '#ffebee' }
+                      <View style={[styles.statusBadge,
+                      app.pagoEstado === 'Confirmado' && { backgroundColor: '#e6f3ef' },
+                      app.pagoEstado === 'Verificando' && { backgroundColor: '#fff8e1' },
+                      app.pagoEstado === 'Pendiente' && { backgroundColor: '#ffebee' }
                       ]}>
                         <Text style={[styles.statusBadgeText,
-                          app.pagoEstado === 'Confirmado' && { color: PRIMARY },
-                          app.pagoEstado === 'Verificando' && { color: '#765b00' },
-                          app.pagoEstado === 'Pendiente' && { color: '#c62828' }
+                        app.pagoEstado === 'Confirmado' && { color: PRIMARY },
+                        app.pagoEstado === 'Verificando' && { color: '#765b00' },
+                        app.pagoEstado === 'Pendiente' && { color: '#c62828' }
                         ]}>
                           {app.pagoEstado}
                         </Text>
@@ -484,9 +489,9 @@ export default function AdminMothersScreen() {
                           Sin notas clínicas registradas todavía.
                         </Text>
                       )}
-                      
+
                       <View style={{ flexDirection: 'row', gap: 12, marginTop: 8 }}>
-                        <TouchableOpacity 
+                        <TouchableOpacity
                           style={styles.addClinicalNotesBtn}
                           onPress={() => {
                             setTargetAppId(app.id);
@@ -500,7 +505,7 @@ export default function AdminMothersScreen() {
                           </Text>
                         </TouchableOpacity>
 
-                        <TouchableOpacity 
+                        <TouchableOpacity
                           style={[styles.addClinicalNotesBtn, { borderColor: '#c5a059' }]}
                           onPress={() => {
                             setReprogramApp(app);
@@ -523,7 +528,7 @@ export default function AdminMothersScreen() {
               )}
 
               {/* Botón Agendar Cita */}
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.modalBookButton}
                 onPress={() => {
                   setSelectedMother(null);
@@ -557,7 +562,7 @@ export default function AdminMothersScreen() {
 
           <ScrollView contentContainerStyle={styles.modalContent} showsVerticalScrollIndicator={false}>
             <Text style={styles.modalSectionTitle}>Datos de la Madre</Text>
-            
+
             <View style={styles.formCard}>
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Nombres *</Text>
@@ -591,11 +596,11 @@ export default function AdminMothersScreen() {
                 <Text style={styles.inputLabel}>Peso (Opcional)</Text>
                 <TextInput style={styles.input} value={newBabyWeight} onChangeText={setNewBabyWeight} placeholder="Ej. 3.5 kg" />
               </View>
-              
+
               {/* Fecha de nacimiento */}
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Fecha de Nacimiento del Bebé *</Text>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.datePickerSelector}
                   onPress={() => setShowRegisterDatePicker(true)}
                 >
@@ -620,7 +625,7 @@ export default function AdminMothersScreen() {
               />
             )}
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.modalBookButton}
               onPress={handleSaveMother}
             >
@@ -644,7 +649,7 @@ export default function AdminMothersScreen() {
           <View style={styles.dialogCard}>
             <Text style={styles.dialogTitle}>Registrar Nota Clínica</Text>
             <Text style={styles.dialogSubtitle}>Escribe el reporte de crecimiento o evaluación de desarrollo:</Text>
-            
+
             <TextInput
               style={styles.dialogTextArea}
               placeholder="Ej: Bebé presenta buen reflejo de succión. Peso adecuado para la edad. Se recomienda continuar lactancia..."
@@ -693,42 +698,42 @@ export default function AdminMothersScreen() {
             {reprogramApp && (
               <>
                 <Text style={styles.modalSectionTitle}>Detalles de la Cita: {reprogramApp.titulo}</Text>
-                
+
                 <View style={styles.formCard}>
                   <View style={styles.inputGroup}>
                     <Text style={styles.inputLabel}>Especialista / Doctor *</Text>
-                    <TextInput 
-                      style={styles.input} 
-                      value={reprogramDoctor} 
-                      onChangeText={setReprogramDoctor} 
-                      placeholder="Nombre del especialista" 
+                    <TextInput
+                      style={styles.input}
+                      value={reprogramDoctor}
+                      onChangeText={setReprogramDoctor}
+                      placeholder="Nombre del especialista"
                     />
                   </View>
 
                   <View style={styles.inputGroup}>
                     <Text style={styles.inputLabel}>Establecimiento / Lugar *</Text>
-                    <TextInput 
-                      style={styles.input} 
-                      value={reprogramLugar} 
-                      onChangeText={setReprogramLugar} 
-                      placeholder="Lugar de la cita" 
+                    <TextInput
+                      style={styles.input}
+                      value={reprogramLugar}
+                      onChangeText={setReprogramLugar}
+                      placeholder="Lugar de la cita"
                     />
                   </View>
 
                   <View style={styles.inputGroup}>
                     <Text style={styles.inputLabel}>Costo / Monto *</Text>
-                    <TextInput 
-                      style={styles.input} 
-                      value={reprogramMonto} 
-                      onChangeText={setReprogramMonto} 
-                      placeholder="S/. XX.XX" 
+                    <TextInput
+                      style={styles.input}
+                      value={reprogramMonto}
+                      onChangeText={setReprogramMonto}
+                      placeholder="S/. XX.XX"
                     />
                   </View>
 
                   {/* Fecha de la cita */}
                   <View style={styles.inputGroup}>
                     <Text style={styles.inputLabel}>Fecha de la Cita *</Text>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                       style={styles.datePickerSelector}
                       onPress={() => setShowReprogramDatePicker(true)}
                     >
@@ -742,7 +747,7 @@ export default function AdminMothersScreen() {
                   {/* Hora de la cita */}
                   <View style={styles.inputGroup}>
                     <Text style={styles.inputLabel}>Hora de la Cita *</Text>
-                    <TouchableOpacity 
+                    <TouchableOpacity
                       style={styles.datePickerSelector}
                       onPress={() => setShowReprogramTimePicker(true)}
                     >
@@ -790,7 +795,7 @@ export default function AdminMothersScreen() {
                   />
                 )}
 
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.modalBookButton}
                   onPress={handleSaveReprogram}
                 >
@@ -821,7 +826,7 @@ export default function AdminMothersScreen() {
 
           <ScrollView contentContainerStyle={styles.modalContent} showsVerticalScrollIndicator={false}>
             <Text style={styles.modalSectionTitle}>Configuración del Control Grupal</Text>
-            
+
             <View style={styles.formCard}>
               {/* Selector de Rango de Edad */}
               <View style={styles.inputGroup}>
@@ -837,13 +842,13 @@ export default function AdminMothersScreen() {
                     <TouchableOpacity
                       key={g.id}
                       style={[
-                        styles.filterPill, 
+                        styles.filterPill,
                         groupAgeRange === g.id && { backgroundColor: PRIMARY, borderColor: PRIMARY }
                       ]}
                       onPress={() => setGroupAgeRange(g.id)}
                     >
                       <Text style={[
-                        styles.filterPillText, 
+                        styles.filterPillText,
                         groupAgeRange === g.id && { color: '#FFF' }
                       ]}>
                         {g.label}
@@ -861,13 +866,13 @@ export default function AdminMothersScreen() {
                     <TouchableOpacity
                       key={t.id}
                       style={[
-                        styles.filterPill, 
+                        styles.filterPill,
                         groupType === t.id && { backgroundColor: t.color, borderColor: t.color }
                       ]}
                       onPress={() => setGroupType(t.id)}
                     >
                       <Text style={[
-                        styles.filterPillText, 
+                        styles.filterPillText,
                         groupType === t.id && { color: '#FFF' }
                       ]}>
                         {t.label}
@@ -879,48 +884,48 @@ export default function AdminMothersScreen() {
 
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Especialista / Doctor *</Text>
-                <TextInput 
-                  style={styles.input} 
-                  value={groupDoctor} 
-                  onChangeText={setGroupDoctor} 
-                  placeholder="Nombre del especialista responsable" 
+                <TextInput
+                  style={styles.input}
+                  value={groupDoctor}
+                  onChangeText={setGroupDoctor}
+                  placeholder="Nombre del especialista responsable"
                 />
               </View>
 
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Lugar del Evento *</Text>
-                <TextInput 
-                  style={styles.input} 
-                  value={groupLugar} 
-                  onChangeText={setGroupLugar} 
-                  placeholder="Ej: Sala de Lactancia o Zoom" 
+                <TextInput
+                  style={styles.input}
+                  value={groupLugar}
+                  onChangeText={setGroupLugar}
+                  placeholder="Ej: Sala de Lactancia o Zoom"
                 />
               </View>
 
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Costo / Monto por Paciente *</Text>
-                <TextInput 
-                  style={styles.input} 
-                  value={groupAmount} 
-                  onChangeText={setGroupAmount} 
-                  placeholder="S/. 0.00" 
+                <TextInput
+                  style={styles.input}
+                  value={groupAmount}
+                  onChangeText={setGroupAmount}
+                  placeholder="S/. 0.00"
                 />
               </View>
 
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Observaciones / Notas (Opcional)</Text>
-                <TextInput 
-                  style={styles.input} 
-                  value={groupNotes} 
-                  onChangeText={setGroupNotes} 
-                  placeholder="Instrucciones adicionales para la madre..." 
+                <TextInput
+                  style={styles.input}
+                  value={groupNotes}
+                  onChangeText={setGroupNotes}
+                  placeholder="Instrucciones adicionales para la madre..."
                 />
               </View>
 
               {/* Fecha de la cita */}
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Fecha del Control Grupal *</Text>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.datePickerSelector}
                   onPress={() => setShowGroupDatePicker(true)}
                 >
@@ -934,7 +939,7 @@ export default function AdminMothersScreen() {
               {/* Hora de la cita */}
               <View style={styles.inputGroup}>
                 <Text style={styles.inputLabel}>Hora del Control Grupal *</Text>
-                <TouchableOpacity 
+                <TouchableOpacity
                   style={styles.datePickerSelector}
                   onPress={() => setShowGroupTimePicker(true)}
                 >
@@ -982,7 +987,7 @@ export default function AdminMothersScreen() {
               />
             )}
 
-            <TouchableOpacity 
+            <TouchableOpacity
               style={styles.modalBookButton}
               onPress={handleSaveGroupSched}
             >
