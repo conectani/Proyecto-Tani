@@ -20,11 +20,11 @@ const registerSchema = z.object({
   phone: z
     .string()
     .length(9, 'El celular debe tener exactamente 9 dígitos')
-    .regex(/^[0-9]+$/, 'Solo se permiten números'),
+    .regex(/^\d+$/, 'Solo se permiten números'),
   dni: z
     .string()
     .length(8, 'El DNI debe tener exactamente 8 dígitos')
-    .regex(/^[0-9]+$/, 'Solo se permiten números'),
+    .regex(/^\d+$/, 'Solo se permiten números'),
   email: z.string().email('Debe ingresar un correo electrónico válido'),
   password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
 });
