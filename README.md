@@ -3,6 +3,13 @@
 
 # ConnecTani: Sistema de Gestión de Salud Materno-Infantil
 
+[![ConnecTani DevSecOps Pipeline](https://github.com/conectani/Proyecto-Tani/actions/workflows/ci.yml/badge.svg)](https://github.com/conectani/Proyecto-Tani/actions/workflows/ci.yml)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=conectani_Proyecto-Tani&metric=alert_status)](https://sonarcloud.io/dashboard?id=conectani_Proyecto-Tani)
+
+## 🚀 Demostración en Vivo (Live Demos)
+- **Web Oficial en cPanel Hosting Real:** [https://aramotech.com/tani](https://aramotech.com/tani)
+- **Servidor Cloud Azure App Service:** [https://connectani-app-service.azurewebsites.net](https://connectani-app-service.azurewebsites.net)
+
 **Universidad:** Universidad Tecnológica del Perú (UTP)
 **Curso:** Herramientas de Desarrollo
 **Docente:** [Coloca el nombre de tu profesor aquí]

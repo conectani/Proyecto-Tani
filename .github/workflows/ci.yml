@@ -86,11 +86,10 @@ jobs:
         args: --severity-threshold=high
         directory: src/Proyecto-tani-admin
 
-
   deploy-to-azure-container-ops:
     name: Despliegue Continuo (CD a Azure Container Registry & Web App)
     needs: build-and-qa-app
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || contains(github.ref, 'feature/')
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -128,7 +127,7 @@ jobs:
   deploy-to-cpanel-hosting:
     name: Despliegue Continuo (CD a cPanel Hosting Real)
     needs: build-and-qa-app
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || contains(github.ref, 'feature/')
     runs-on: ubuntu-latest
     steps:
     - name: 1. Checkout del Codigo Fuente
