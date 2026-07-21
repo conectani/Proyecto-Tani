@@ -17,6 +17,15 @@ RUN npm ci --no-audit --no-fund --preferred-offline && npm cache clean --force
 # Copia el resto del código fuente del proyecto
 COPY . .
 
+# Declarar variables de entorno requeridas para la compilación (Render las pasa como ARGs de forma automática)
+# Proporcionamos valores de respaldo (fallbacks) genéricos para evitar que falle la compilación si no están configuradas en Render
+ARG EXPO_PUBLIC_SUPABASE_URL="https://temp-placeholder-url-for-build.supabase.co"
+ARG EXPO_PUBLIC_SUPABASE_ANON_KEY="temp-anon-key-placeholder-for-build"
+
+# Exponer las variables para que estén disponibles durante la compilación de Expo
+ENV EXPO_PUBLIC_SUPABASE_URL=$EXPO_PUBLIC_SUPABASE_URL
+ENV EXPO_PUBLIC_SUPABASE_ANON_KEY=$EXPO_PUBLIC_SUPABASE_ANON_KEY
+
 # Exporta la compilación estática web de Expo (Metro bundler respetará el maxWorkers limitado en metro.config.js)
 RUN npx expo export --platform web
 
