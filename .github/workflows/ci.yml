@@ -139,12 +139,12 @@ jobs:
     - name: 3. Compilacion de Aplicacion Web para Produccion
       run: |
         cd src/Proyecto-tani
-        npm ci
-        npx expo export --platform web
+        npm ci --ignore-scripts
+        ./node_modules/.bin/expo export --platform web
         node scripts/fix-web-scripts.js
 
     - name: 4. Despliegue Automatico via FTP a cPanel (aramotech.com/tani)
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.5
+      uses: SamKirkland/FTP-Deploy-Action@18ef4195155f84d668c2ee03e488d752c0bf7123 # v4.3.5
       continue-on-error: true
       with:
         server: ${{ secrets.FTP_SERVER }}
