@@ -7,6 +7,15 @@ export interface ResultadoCita {
   error: string | null;
 }
 
+function calculateJitterDelay(intento: number): number {
+  const baseDelay = Math.pow(2, intento) * 100;
+  if (typeof globalThis.crypto?.getRandomValues === 'function') {
+    const randomVal = globalThis.crypto.getRandomValues(new Uint32Array(1))[0] / 4294967295;
+    return baseDelay + (randomVal * 50);
+  }
+  return baseDelay + (Date.now() % 50);
+}
+
 /**
  * Función que implementa Exponential Backoff para mitigar colisiones de concurrencia en Supabase Postgres
  * @param callback Función de llamada a Supabase que interactúa con la base de datos
@@ -39,10 +48,7 @@ export async function agendarCitaConReintento(
         }
         
         // Calcular tiempo de espera exponencial con factor aleatorio (Jitter)
-        const jitter = typeof globalThis.crypto?.getRandomValues === 'function'
-          ? (globalThis.crypto.getRandomValues(new Uint32Array(1))[0] / 4294967295) * 50
-          : (Date.now() % 50);
-        const delay = Math.pow(2, intento) * 100 + jitter;
+        const delay = calculateJitterDelay(intento);
         await new Promise((resolve) => setTimeout(resolve, delay));
         continue; // Proceder con el siguiente intento
       }

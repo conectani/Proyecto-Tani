@@ -30,7 +30,7 @@ interface AuthState {
   updateProfile: (updated: Partial<UserProfile>) => Promise<void>;
 }
 
-const DEFAULT_DEMO_PASSWORD = process.env.EXPO_PUBLIC_DEFAULT_DEMO_PASSWORD || 'Estefany123';
+const DEFAULT_DEMO_PASSWORD = process.env.EXPO_PUBLIC_DEFAULT_DEMO_PASSWORD || '';
 
 export const useAuthStore = create<AuthState>()(
   persist(
