@@ -1,7 +1,7 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  Image, KeyboardAvoidingView, Platform, ScrollView, Animated, Alert, Modal,
+  Image, KeyboardAvoidingView, Platform, ScrollView, Animated, Modal,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -163,7 +163,7 @@ export default function LoginScreen() {
         </Text>
 
         {/* Glass Card */}
-        <View style={styles.card}>
+        <Animated.View style={[styles.card, { opacity: slide.opacity, transform: [{ translateY: slide.translateY }] }]}>
           <Text style={styles.cardTitle}>Bienvenida de nuevo</Text>
           <Text style={styles.cardSubtitle}>
             Ingresa tus credenciales para acceder a tu cuenta.
@@ -229,7 +229,7 @@ export default function LoginScreen() {
               <Ionicons name="arrow-forward" size={20} color="#FFF" />
             </LinearGradient>
           </AnimatedButton>
-        </View>
+        </Animated.View>
 
         {/* Registro */}
         <View style={styles.registerRow}>
