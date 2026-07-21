@@ -39,10 +39,10 @@
         }
       ],
       "expo-font",
-      "expo-web-browser",
-      "expo-video"
+      "expo-web-browser"
     ],
     "experiments": {
+      "baseUrl": "/tani",
       "typedRoutes": true,
       "reactCompiler": true
     },
