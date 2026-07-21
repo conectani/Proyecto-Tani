@@ -99,7 +99,7 @@ jobs:
     - name: 1. Checkout del Codigo Fuente
       uses: actions/checkout@v4
     - name: 2. Autenticacion en Azure Container Registry (ACR)
-      uses: azure/docker-login@v2
+      uses: azure/docker-login@16198f1f496739665c36142144ef20b70d76bfcd # v2
       continue-on-error: false
       with:
         login-server: ${{ secrets.AZURE_ACR_SERVER }}
@@ -118,7 +118,7 @@ jobs:
       run: docker push "$AZURE_ACR_SERVER/tani-app:${{ github.sha }}"
 
     - name: 5. Despliegue Continuo en Azure App Service for Containers
-      uses: azure/webapps-deploy@v3
+      uses: azure/webapps-deploy@81729dd7bbef60b3724c965b93198ae4a29a0665 # v3
       continue-on-error: false
       with:
         app-name: 'connectani-app-service'
