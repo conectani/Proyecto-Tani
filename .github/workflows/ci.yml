@@ -109,13 +109,16 @@ jobs:
     - name: 3. Construccion de Imagen Docker Multi-etapa
       env:
         AZURE_ACR_SERVER: ${{ secrets.AZURE_ACR_SERVER }}
-      run: docker build -t "$AZURE_ACR_SERVER/tani-app:${{ github.sha }}" .
+      run: |
+        docker build -t "$AZURE_ACR_SERVER/tani-app:${{ github.sha }}" -t "$AZURE_ACR_SERVER/tani-app:latest" .
 
     - name: 4. Publicacion de Imagen en Registro de Azure (Push to ACR)
       continue-on-error: true
       env:
         AZURE_ACR_SERVER: ${{ secrets.AZURE_ACR_SERVER }}
-      run: docker push "$AZURE_ACR_SERVER/tani-app:${{ github.sha }}"
+      run: |
+        docker push "$AZURE_ACR_SERVER/tani-app:${{ github.sha }}"
+        docker push "$AZURE_ACR_SERVER/tani-app:latest"
 
     - name: 5. Despliegue Continuo en Azure App Service for Containers
       uses: azure/webapps-deploy@2b3d01448db41f0f06530f77259168233f23a260 # v2.2.1
