@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: connectani-web
+    runtime: docker
+    plan: free
+    dockerfilePath: src/Proyecto-tani/Dockerfile.render
+    dockerContext: src/Proyecto-tani
+    healthCheckPath: /
+    autoDeploy: true
