@@ -16,12 +16,12 @@ jobs:
 
     steps:
     - name: 1. Checkout del Codigo Fuente
-      uses: actions/checkout@v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       with:
         fetch-depth: 0
 
     - name: 2. Configurar Node.js (v20)
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@39370e3970a6d050c08020d81da5e2d6675276e0 # v4.1.0
       with:
         node-version: '20'
         cache: 'npm'
@@ -34,7 +34,7 @@ jobs:
       run: npm run test
 
     - name: 5. Analisis de Calidad de Codigo (SonarCloud)
-      uses: SonarSource/sonarcloud-github-action@master
+      uses: SonarSource/sonarcloud-github-action@e4425d48a609d57a26f633190dfebccdbba0401d
       continue-on-error: true
       with:
         projectBaseDir: src/Proyecto-tani
@@ -43,7 +43,7 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     - name: 6. Analisis de Seguridad de Dependencias (Snyk SCA)
-      uses: snyk/actions/node@master
+      uses: snyk/actions/node@806182742461562b67788a64410098c9d9b96dba
       continue-on-error: true
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -60,12 +60,12 @@ jobs:
 
     steps:
     - name: 1. Checkout del Codigo Fuente
-      uses: actions/checkout@v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
       with:
         fetch-depth: 0
 
     - name: 2. Configurar Node.js (v20)
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@39370e3970a6d050c08020d81da5e2d6675276e0 # v4.1.0
       with:
         node-version: '20'
         cache: 'npm'
@@ -78,7 +78,7 @@ jobs:
       run: npm run lint
 
     - name: 5. Analisis de Seguridad de Dependencias (Snyk SCA)
-      uses: snyk/actions/node@master
+      uses: snyk/actions/node@806182742461562b67788a64410098c9d9b96dba
       continue-on-error: true
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -97,9 +97,9 @@ jobs:
         working-directory: src/Proyecto-tani
     steps:
     - name: 1. Checkout del Codigo Fuente
-      uses: actions/checkout@v4
+      uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
     - name: 2. Autenticacion en Azure Container Registry (ACR)
-      uses: azure/docker-login@v1
+      uses: azure/docker-login@16198f1f496739665c36142144ef20b70d76bfcd # v2
       continue-on-error: false
       with:
         login-server: ${{ secrets.AZURE_ACR_SERVER }}
@@ -114,8 +114,9 @@ jobs:
       run: docker push ${{ secrets.AZURE_ACR_SERVER }}/tani-app:${{ github.sha }}
 
     - name: 5. Despliegue Continuo en Azure App Service for Containers
-      uses: azure/webapps-deploy@v2
+      uses: azure/webapps-deploy@81729dd7bbef60b3724c965b93198ae4a29a0665 # v3
       continue-on-error: false
       with:
         app-name: 'connectani-app-service'
         images: '${{ secrets.AZURE_ACR_SERVER }}/tani-app:${{ github.sha }}'
+
