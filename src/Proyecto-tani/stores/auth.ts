@@ -30,24 +30,24 @@ interface AuthState {
   updateProfile: (updated: Partial<UserProfile>) => Promise<void>;
 }
 
+const DEFAULT_DEMO_PASSWORD = process.env.EXPO_PUBLIC_DEFAULT_DEMO_PASSWORD || 'Estefany123';
+
 export const useAuthStore = create<AuthState>()(
   persist(
     (set, get) => ({
       user: null,
       token: null,
       isAuthenticated: false,
-      login: async (dni, password) => {
+      login: async (dni, password = DEFAULT_DEMO_PASSWORD) => {
         // Mapeo especial para los usuarios sembrados, de lo contrario se usa dni@tani.app
         let email = `${dni}@tani.app`;
         if (dni === '12345678') email = 'estefany@tani.app';
         if (dni === '00000000') email = 'admin@tani.app';
 
-        const securePassword = password || 'Estefany123';
-
         // 1. Iniciar sesión en Supabase Auth
         const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
           email,
-          password: securePassword,
+          password,
         });
 
         if (authError) {
@@ -93,13 +93,11 @@ export const useAuthStore = create<AuthState>()(
           isAuthenticated: true,
         });
       },
-      register: async ({ dni, phone, name, surname, email, password }) => {
-        const securePassword = password || 'Estefany123';
-
+      register: async ({ dni, phone, name, surname, email, password = DEFAULT_DEMO_PASSWORD }) => {
         // 1. Registrar usuario en Supabase Auth con metadatos
         const { data: authData, error: authError } = await supabase.auth.signUp({
           email,
-          password: securePassword,
+          password,
           options: {
             data: {
               nombre: name,
@@ -122,7 +120,7 @@ export const useAuthStore = create<AuthState>()(
         if (!session) {
           const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
             email,
-            password: securePassword,
+            password,
           });
 
           if (signInError) {

@@ -39,7 +39,10 @@ export async function agendarCitaConReintento(
         }
         
         // Calcular tiempo de espera exponencial con factor aleatorio (Jitter)
-        const delay = Math.pow(2, intento) * 100 + Math.random() * 50;
+        const jitter = typeof globalThis.crypto?.getRandomValues === 'function'
+          ? (globalThis.crypto.getRandomValues(new Uint32Array(1))[0] / 4294967295) * 50
+          : (Date.now() % 50);
+        const delay = Math.pow(2, intento) * 100 + jitter;
         await new Promise((resolve) => setTimeout(resolve, delay));
         continue; // Proceder con el siguiente intento
       }

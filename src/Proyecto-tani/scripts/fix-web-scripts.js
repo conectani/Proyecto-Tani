@@ -1,5 +1,5 @@
-const fs = require('fs');
-const path = require('path');
+const fs = require('node:fs');
+const path = require('node:path');
 
 function walkDir(dir, callback) {
   fs.readdirSync(dir).forEach(f => {
@@ -20,8 +20,8 @@ if (fs.existsSync(distDir)) {
     if (path.extname(filePath) === '.html') {
       let content = fs.readFileSync(filePath, 'utf8');
       if (content.includes('<script src="/_expo/static/js/web/')) {
-        content = content.replace(
-          /<script src="\/_expo\/static\/js\/web\//g,
+        content = content.replaceAll(
+          '<script src="/_expo/static/js/web/',
           '<script type="module" src="/_expo/static/js/web/'
         );
         fs.writeFileSync(filePath, content, 'utf8');
