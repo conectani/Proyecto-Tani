@@ -34,7 +34,7 @@ jobs:
       run: npm run test
 
     - name: 5. Analisis de Calidad de Codigo (SonarCloud)
-      uses: SonarSource/sonarcloud-github-action@v3.1.0
+      uses: SonarSource/sonarcloud-github-action@master
       continue-on-error: true
       with:
         projectBaseDir: src/Proyecto-tani
@@ -43,7 +43,7 @@ jobs:
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
 
     - name: 6. Analisis de Seguridad de Dependencias (Snyk SCA)
-      uses: snyk/actions/node@v0.4.0
+      uses: snyk/actions/node@master
       continue-on-error: true
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
@@ -78,11 +78,12 @@ jobs:
       run: npm run lint
 
     - name: 5. Analisis de Seguridad de Dependencias (Snyk SCA)
-      uses: snyk/actions/node@v0.4.0
+      uses: snyk/actions/node@master
       continue-on-error: true
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
       with:
         args: --severity-threshold=high
         directory: src/Proyecto-tani-admin
+
 
