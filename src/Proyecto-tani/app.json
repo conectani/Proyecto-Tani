@@ -42,6 +42,7 @@
       "expo-web-browser"
     ],
     "experiments": {
+      "baseUrl": "/tani",
       "typedRoutes": true,
       "reactCompiler": true
     },
