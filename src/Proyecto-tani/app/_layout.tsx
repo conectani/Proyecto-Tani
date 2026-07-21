@@ -14,7 +14,7 @@ import {
 import * as SplashScreen from 'expo-splash-screen';
 import { useState, useEffect } from 'react';
 import { View, StyleSheet } from 'react-native';
-import { Video, ResizeMode } from 'expo-av';
+import { useVideoPlayer, VideoView } from 'expo-video';
 import { useColorScheme } from '@/hooks/use-color-scheme';
 import NetInfo from '@react-native-community/netinfo';
 import { syncOfflineQueue } from '@/utils/syncManager';
@@ -29,6 +29,13 @@ export const unstable_settings = {
 export default function RootLayout() {
   const colorScheme = useColorScheme();
   const [videoFinished, setVideoFinished] = useState(false);
+
+  const player = useVideoPlayer(require('@/assets/videos/splash.mp4'), (player) => {
+    player.loop = true;
+    player.muted = true;
+    player.playbackRate = 1.5;
+    player.play();
+  });
 
   useEffect(() => {
     // Escucha cambios de conexión
@@ -67,14 +74,10 @@ export default function RootLayout() {
   if (!videoFinished) {
     return (
       <View style={styles.splashContainer}>
-        <Video
-          source={require('@/assets/videos/splash.mp4')}
+        <VideoView
+          player={player}
           style={StyleSheet.absoluteFill}
-          resizeMode={ResizeMode.COVER}
-          shouldPlay
-          isLooping={true}
-          rate={1.5}
-          isMuted={true}
+          contentFit="cover"
         />
         <StatusBar style="light" />
       </View>

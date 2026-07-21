@@ -1,5 +1,5 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { supabase } from '../db'; // Conexión a la base de datos Supabase
+import { supabase } from './supabase'; // Conexión a la base de datos Supabase
 
 const QUEUE_STORAGE_KEY = '@connectani_offline_queue';
 

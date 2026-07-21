@@ -68,7 +68,7 @@ const NOTIFS = [
   },
 ];
 
-function NotifCard({ notif, delay }: { notif: typeof NOTIFS[0]; delay: number }) {
+function NotifCard({ notif, delay }: Readonly<{ notif: typeof NOTIFS[0]; delay: number }>) {
   const opacity = useRef(new Animated.Value(0)).current;
   const translateY = useRef(new Animated.Value(16)).current;
 

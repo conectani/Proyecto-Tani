@@ -1,7 +1,7 @@
 import React from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  ScrollView, Platform,
+  ScrollView,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -100,9 +100,9 @@ export default function TerminosScreen() {
         </View>
 
         {/* Sections */}
-        {SECTIONS.map((sec, i) => (
+        {SECTIONS.map((sec) => (
           <View
-            key={i}
+            key={sec.title}
             style={[s.card, { backgroundColor: sec.bg }]}
           >
             <View style={s.cardHead}>

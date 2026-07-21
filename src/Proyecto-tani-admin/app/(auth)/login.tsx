@@ -1,13 +1,13 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  Image, KeyboardAvoidingView, Platform, ScrollView, Animated, Alert, Modal,
+  Image, KeyboardAvoidingView, Platform, ScrollView, Animated, Modal,
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
-import { AnimatedButton, useSlideIn } from '@/constants/animations';
+import { AnimatedButton } from '@/constants/animations';
 import { useAuthStore } from '@/stores/auth';
 
 const TANI_LOGO = require('@/assets/images/Tani Icon.png');
@@ -133,8 +133,6 @@ export default function LoginScreen() {
       }
     }
   };
-
-  const slide = useSlideIn(300);
 
   return (
     <KeyboardAvoidingView
