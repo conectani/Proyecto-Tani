@@ -85,3 +85,37 @@ jobs:
       with:
         args: --severity-threshold=high
         directory: src/Proyecto-tani-admin
+
+  deploy-to-azure-container-ops:
+    name: Despliegue Continuo (CD a Azure Container Registry & Web App)
+    needs: build-and-qa-app
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: src/Proyecto-tani
+    steps:
+    - name: 1. Checkout del Codigo Fuente
+      uses: actions/checkout@v3
+
+    - name: 2. Autenticacion en Azure Container Registry (ACR)
+      uses: azure/docker-login@v1
+      continue-on-error: true
+      with:
+        login-server: ${{ secrets.AZURE_ACR_SERVER }}
+        username: ${{ secrets.AZURE_ACR_USERNAME }}
+        password: ${{ secrets.AZURE_ACR_PASSWORD }}
+
+    - name: 3. Construccion de Imagen Docker Multi-etapa
+      run: docker build -t connectaniacr.azurecr.io/tani-app:${{ github.sha }} .
+
+    - name: 4. Publicacion de Imagen en Registro de Azure (Push to ACR)
+      continue-on-error: true
+      run: docker push connectaniacr.azurecr.io/tani-app:${{ github.sha }}
+
+    - name: 5. Despliegue Continuo en Azure App Service for Containers
+      uses: azure/webapps-deploy@v2
+      continue-on-error: true
+      with:
+        app-name: 'connectani-app-service'
+        images: 'connectaniacr.azurecr.io/tani-app:${{ github.sha }}'
