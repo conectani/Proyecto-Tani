@@ -86,6 +86,7 @@ jobs:
         args: --severity-threshold=high
         directory: src/Proyecto-tani-admin
 
+
   deploy-to-azure-container-ops:
     name: Despliegue Continuo (CD a Azure Container Registry & Web App)
     needs: build-and-qa-app
@@ -125,7 +126,7 @@ jobs:
         images: '${{ secrets.AZURE_ACR_SERVER }}/tani-app:${{ github.sha }}'
 
   deploy-to-cpanel-hosting:
-    name: Despliegue Continuo (CD a cPanel - aramotech.com)
+    name: Despliegue Continuo (CD a cPanel Hosting Real)
     needs: build-and-qa-app
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop'
     runs-on: ubuntu-latest
@@ -137,17 +138,15 @@ jobs:
       uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v3.8.0
       with:
         node-version: '20'
-        cache: 'npm'
-        cache-dependency-path: src/Proyecto-tani/package-lock.json
 
-    - name: 3. Compilar Aplicacion Web Estatica
+    - name: 3. Compilacion de Aplicacion Web para Produccion
       run: |
         cd src/Proyecto-tani
-        npm ci --ignore-scripts
+        npm ci
         npx expo export --platform web
         node scripts/fix-web-scripts.js
 
-    - name: 4. Publicar en Servidor cPanel por FTP (aramotech.com)
+    - name: 4. Despliegue Automatico via FTP a cPanel (aramotech.com/tani)
       uses: SamKirkland/FTP-Deploy-Action@v4.3.5
       continue-on-error: true
       with:
@@ -155,4 +154,4 @@ jobs:
         username: ${{ secrets.FTP_USERNAME }}
         password: ${{ secrets.FTP_PASSWORD }}
         local-dir: ./src/Proyecto-tani/dist/
-        server-dir: /public_html/
+        server-dir: /public_html/tani/
