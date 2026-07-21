@@ -20,7 +20,7 @@ export default function MiCarnetScreen() {
 
   const getHistoryNumber = (rawId?: string) => {
     if (!rawId) return '10243';
-    const clean = rawId.replace(/[^0-9]/g, '');
+    const clean = rawId.replace(/[^\d]/g, '');
     if (clean.length >= 5) return clean.slice(0, 5);
     let hash = 0;
     for (let i = 0; i < rawId.length; i++) {
