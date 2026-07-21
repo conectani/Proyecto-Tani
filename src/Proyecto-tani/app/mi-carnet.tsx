@@ -18,11 +18,23 @@ export default function MiCarnetScreen() {
   const { user } = useAuthStore();
   const { babies, activeBabyId } = useBabyStore();
 
+  const getHistoryNumber = (rawId?: string) => {
+    if (!rawId) return '10243';
+    const clean = rawId.replace(/[^\d]/g, '');
+    if (clean.length >= 5) return clean.slice(0, 5);
+    let hash = 0;
+    for (let i = 0; i < rawId.length; i++) {
+      hash = (hash << 5) - hash + (rawId.codePointAt(i) || 0);
+      hash = Math.trunc(hash);
+    }
+    return String(10000 + (Math.abs(hash) % 90000));
+  };
+
   const activeBaby = babies.find((b) => b.id === activeBabyId) || babies[0];
   const babyName = activeBaby ? activeBaby.name : 'Mateo';
   const momSurname = user ? user.surname : 'García';
   const fullName = `${babyName} ${momSurname}`;
-  const historyNum = user ? user.id.replace('TN-', '') : '98932';
+  const historyNum = getHistoryNumber(user?.id);
   const qrCodeValue = `TANI-PE-${historyNum}-${babyName.toUpperCase()}-${momSurname.toUpperCase()}`;
 
   return (

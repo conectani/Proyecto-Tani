@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
-  Image, ScrollView, Switch, TextInput, Alert,
+  Image, ScrollView, Switch, TextInput, Alert, Platform,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
@@ -45,21 +45,29 @@ export default function PerfilScreen() {
   };
 
   const handleLogout = async () => {
-    Alert.alert(
-      'Cerrar Sesión',
-      '¿Estás segura de que deseas salir de tu cuenta?',
-      [
-        { text: 'Cancelar', style: 'cancel' },
-        { 
-          text: 'Salir', 
-          style: 'destructive',
-          onPress: async () => {
-            await logout();
-            router.replace('/(auth)/login');
+    const performLogout = async () => {
+      await logout();
+      router.replace('/(auth)/login');
+    };
+
+    if (Platform.OS === 'web') {
+      if (typeof window !== 'undefined' && window.confirm('¿Estás segura de que deseas salir de tu cuenta?')) {
+        await performLogout();
+      }
+    } else {
+      Alert.alert(
+        'Cerrar Sesión',
+        '¿Estás segura de que deseas salir de tu cuenta?',
+        [
+          { text: 'Cancelar', style: 'cancel' },
+          { 
+            text: 'Salir', 
+            style: 'destructive',
+            onPress: performLogout,
           }
-        }
-      ]
-    );
+        ]
+      );
+    }
   };
 
   const getHeaderName = () => {
