@@ -12,7 +12,7 @@ interface UserAvatarProps {
   style?: ViewStyle;
 }
 
-export function UserAvatar({ size = 40, style }: UserAvatarProps) {
+export function UserAvatar({ size = 40, style }: Readonly<UserAvatarProps>) {
   return (
     <View
       style={[

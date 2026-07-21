@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Modal, Alert, Platform } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TextInput, TouchableOpacity, Modal, Alert, Platform, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
@@ -168,8 +168,7 @@ export default function AdminMothersScreen() {
     let hours = reprogramDate.getHours();
     const minutes = reprogramDate.getMinutes().toString().padStart(2, '0');
     const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12;
-    hours = hours ? hours : 12;
+    hours = hours % 12 || 12;
     const formattedTime = `${day} ${month}, ${hours}:${minutes} ${ampm}`;
 
     updateAppointment(reprogramApp.id, {
@@ -206,8 +205,7 @@ export default function AdminMothersScreen() {
     let hours = groupDate.getHours();
     const minutes = groupDate.getMinutes().toString().padStart(2, '0');
     const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12;
-    hours = hours ? hours : 12;
+    hours = hours % 12 || 12;
     const formattedTime = `${day} ${month}, ${hours}:${minutes} ${ampm}`;
 
     const activeType = CITAS_TYPES.find(t => t.id === groupType) || CITAS_TYPES[2];
@@ -216,12 +214,11 @@ export default function AdminMothersScreen() {
     mothers.forEach(m => {
       m.babies.forEach(b => {
         const age = calculateAgeInMonths(b.birthDate);
-        let match = false;
-        if (groupAgeRange === '0-3' && age <= 3) match = true;
-        else if (groupAgeRange === '4-6' && age >= 4 && age <= 6) match = true;
-        else if (groupAgeRange === '7-12' && age >= 7 && age <= 12) match = true;
-        else if (groupAgeRange === '12+' && age > 12) match = true;
-        else if (groupAgeRange === 'all') match = true;
+        const match = groupAgeRange === 'all'
+          || (groupAgeRange === '0-3' && age <= 3)
+          || (groupAgeRange === '4-6' && age >= 4 && age <= 6)
+          || (groupAgeRange === '7-12' && age >= 7 && age <= 12)
+          || (groupAgeRange === '12+' && age > 12);
 
         if (match) {
           targets.push({ motherId: m.id, babyId: b.id });

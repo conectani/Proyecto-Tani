@@ -5,10 +5,10 @@
 export const calculateAgeInMonths = (birthDateString: string, baseDateInput?: Date | string): number => {
   if (!birthDateString) return 0;
   const birthDate = new Date(birthDateString);
-  if (isNaN(birthDate.getTime())) return 0;
+  if (Number.isNaN(birthDate.getTime())) return 0;
   
   const today = baseDateInput ? new Date(baseDateInput) : new Date('2026-05-22');
-  if (isNaN(today.getTime())) return 0;
+  if (Number.isNaN(today.getTime())) return 0;
   
   if (birthDate > today) return 0; // Si nació en el futuro relativo, edad es 0
   
@@ -48,10 +48,10 @@ export const calculatePregnancyWeeks = (
 ): { weeks: number; days: number; isValid: boolean } => {
   if (!lmpString) return { weeks: 0, days: 0, isValid: false };
   const lmpDate = new Date(lmpString);
-  if (isNaN(lmpDate.getTime())) return { weeks: 0, days: 0, isValid: false };
+  if (Number.isNaN(lmpDate.getTime())) return { weeks: 0, days: 0, isValid: false };
 
   const today = baseDateInput ? new Date(baseDateInput) : new Date('2026-05-22');
-  if (isNaN(today.getTime())) return { weeks: 0, days: 0, isValid: false };
+  if (Number.isNaN(today.getTime())) return { weeks: 0, days: 0, isValid: false };
 
   if (lmpDate > today) {
     return { weeks: 0, days: 0, isValid: false }; // Fecha en el futuro es inválida para la gestación actual
@@ -88,10 +88,10 @@ export const getVaccineSchedule = (
 ): VaccineItem[] => {
   if (!birthDateString) return [];
   const birthDate = new Date(birthDateString);
-  if (isNaN(birthDate.getTime())) return [];
+  if (Number.isNaN(birthDate.getTime())) return [];
 
   const today = baseDateInput ? new Date(baseDateInput) : new Date('2026-05-22');
-  if (isNaN(today.getTime())) return [];
+  if (Number.isNaN(today.getTime())) return [];
 
   const vaccinesList = [
     { name: 'BCG (Tuberculosis)', ageMonths: 0 },

@@ -87,7 +87,7 @@ export default function CitasScreen() {
           <View style={styles.daysRow}>
             {DAYS.map((d, i) => (
               <TouchableOpacity
-                key={i}
+                key={`${d.day}-${d.date}`}
                 style={[
                   styles.dayPill,
                   d.active && styles.dayPillActive,
@@ -117,7 +117,7 @@ export default function CitasScreen() {
         {/* Citas */}
         {CITAS.map((cita, i) => (
           <TouchableOpacity
-            key={i}
+            key={cita.titulo + '-' + i}
             style={[styles.citaCard, { borderLeftColor: cita.color }]}
             onPress={() => router.push('/(citas)/detalle')}
             activeOpacity={0.9}
