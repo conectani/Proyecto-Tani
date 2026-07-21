@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput, Alert, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useRouter } from 'expo-router';
 import * as Haptics from 'expo-haptics';
@@ -84,9 +83,8 @@ export default function AdminAgendarCitaScreen() {
     let hours = date.getHours();
     const minutes = date.getMinutes().toString().padStart(2, '0');
     const ampm = hours >= 12 ? 'PM' : 'AM';
-    hours = hours % 12;
-    hours = hours ? hours : 12; 
-    const formattedTime = `${day} ${month}, ${hours}:${minutes} ${ampm}`;
+    const displayHours = hours % 12 || 12;
+    const formattedTime = `${day} ${month}, ${displayHours}:${minutes} ${ampm}`;
 
     // Obtener color e ícono correspondientes
     const activeType = CITAS_TYPES.find(t => t.id === selectedType) || CITAS_TYPES[2];

@@ -1,7 +1,23 @@
+import React from 'react';
 import { Tabs } from 'expo-router';
-import { Colors } from '@/constants/theme';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+
+function renderHomeIcon({ color }: Readonly<{ color: string }>) {
+  return <Ionicons name="grid-outline" size={22} color={color} />;
+}
+
+function renderMothersIcon({ color }: Readonly<{ color: string }>) {
+  return <Ionicons name="people-outline" size={22} color={color} />;
+}
+
+function renderPaymentsIcon({ color }: Readonly<{ color: string }>) {
+  return <Ionicons name="card-outline" size={22} color={color} />;
+}
+
+function renderAnnouncementsIcon({ color }: Readonly<{ color: string }>) {
+  return <Ionicons name="megaphone-outline" size={22} color={color} />;
+}
 
 export default function TabLayout() {
   const insets = useSafeAreaInsets();
@@ -34,36 +50,28 @@ export default function TabLayout() {
         name="index"
         options={{
           title: 'Inicio',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="grid-outline" size={22} color={color} />
-          ),
+          tabBarIcon: renderHomeIcon,
         }}
       />
       <Tabs.Screen
         name="madres"
         options={{
           title: 'Madres',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="people-outline" size={22} color={color} />
-          ),
+          tabBarIcon: renderMothersIcon,
         }}
       />
       <Tabs.Screen
         name="pagos"
         options={{
           title: 'Pagos',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="card-outline" size={22} color={color} />
-          ),
+          tabBarIcon: renderPaymentsIcon,
         }}
       />
       <Tabs.Screen
         name="anuncios"
         options={{
           title: 'Anuncios',
-          tabBarIcon: ({ color }) => (
-            <Ionicons name="megaphone-outline" size={22} color={color} />
-          ),
+          tabBarIcon: renderAnnouncementsIcon,
         }}
       />
     </Tabs>

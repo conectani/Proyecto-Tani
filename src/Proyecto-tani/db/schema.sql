@@ -32,6 +32,15 @@ create table public.usuarios (
 -- Habilitar Row Level Security (RLS)
 alter table public.usuarios enable row level security;
 
+-- Helper para verificar rol de administrador en RLS
+create or replace function public.is_admin()
+returns boolean
+language sql
+stable
+as $$
+  select coalesce(auth.jwt() -> 'user_metadata' ->> 'rol', 'madre') = 'admin';
+$$;
+
 -- Políticas de Seguridad RLS para "usuarios"
 create policy "Usuarios pueden ver su propio perfil" 
   on public.usuarios for select 
@@ -44,13 +53,13 @@ create policy "Usuarios pueden actualizar su propio perfil"
 create policy "Admins pueden ver todos los perfiles de usuario"
   on public.usuarios for select
   using (
-    coalesce(auth.jwt() -> 'user_metadata' ->> 'rol', 'madre') = 'admin'
+    public.is_admin()
   );
 
 create policy "Admins pueden modificar cualquier usuario"
   on public.usuarios for all
   using (
-    coalesce(auth.jwt() -> 'user_metadata' ->> 'rol', 'madre') = 'admin'
+    public.is_admin()
   );
 
 -- Trigger para crear el perfil automáticamente cuando se registre en Supabase Auth
@@ -114,13 +123,13 @@ create policy "Usuarios pueden eliminar sus propios bebes"
 create policy "Admins pueden ver todos los bebes"
   on public.bebes for select
   using (
-    coalesce(auth.jwt() -> 'user_metadata' ->> 'rol', 'madre') = 'admin'
+    public.is_admin()
   );
 
 create policy "Admins pueden modificar cualquier bebe"
   on public.bebes for all
   using (
-    coalesce(auth.jwt() -> 'user_metadata' ->> 'rol', 'madre') = 'admin'
+    public.is_admin()
   );
 
 
@@ -169,13 +178,13 @@ create policy "Usuarios pueden eliminar sus citas"
 create policy "Admins pueden ver todas las citas de la plataforma"
   on public.citas for select
   using (
-    coalesce(auth.jwt() -> 'user_metadata' ->> 'rol', 'madre') = 'admin'
+    public.is_admin()
   );
 
 create policy "Admins pueden gestionar todas las citas"
   on public.citas for all
   using (
-    coalesce(auth.jwt() -> 'user_metadata' ->> 'rol', 'madre') = 'admin'
+    public.is_admin()
   );
 
 
@@ -238,13 +247,13 @@ create policy "Usuarios pueden eliminar notas de sus citas"
 create policy "Admins pueden ver todas las notas de citas"
   on public.notas_cita for select
   using (
-    coalesce(auth.jwt() -> 'user_metadata' ->> 'rol', 'madre') = 'admin'
+    public.is_admin()
   );
 
 create policy "Admins pueden gestionar todas las notas de citas"
   on public.notas_cita for all
   using (
-    coalesce(auth.jwt() -> 'user_metadata' ->> 'rol', 'madre') = 'admin'
+    public.is_admin()
   );
 
 
@@ -270,7 +279,7 @@ create policy "Cualquiera puede leer anuncios"
 create policy "Admins pueden gestionar anuncios"
   on public.anuncios for all
   using (
-    coalesce(auth.jwt() -> 'user_metadata' ->> 'rol', 'madre') = 'admin'
+    public.is_admin()
   );
 
 
@@ -301,7 +310,7 @@ create policy "Cualquiera puede leer los materiales educativos"
 create policy "Admins pueden gestionar materiales educativos"
   on public.materiales_educativos for all
   using (
-    coalesce(auth.jwt() -> 'user_metadata' ->> 'rol', 'madre') = 'admin'
+    public.is_admin()
   );
 
 
@@ -332,7 +341,7 @@ create policy "Cualquiera puede consultar los hitos de desarrollo"
 create policy "Admins pueden gestionar los hitos de desarrollo"
   on public.hitos_desarrollo for all
   using (
-    coalesce(auth.jwt() -> 'user_metadata' ->> 'rol', 'madre') = 'admin'
+    public.is_admin()
   );
 
 
@@ -395,11 +404,11 @@ create policy "Usuarios pueden borrar hitos de sus bebes"
 create policy "Admins pueden ver todos los hitos completados de los bebes"
   on public.hitos_completados_bebe for select
   using (
-    coalesce(auth.jwt() -> 'user_metadata' ->> 'rol', 'madre') = 'admin'
+    public.is_admin()
   );
 
 create policy "Admins pueden modificar cualquier hito de bebe"
   on public.hitos_completados_bebe for all
   using (
-    coalesce(auth.jwt() -> 'user_metadata' ->> 'rol', 'madre') = 'admin'
+    public.is_admin()
   );
