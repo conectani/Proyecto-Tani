@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [ "develop", "main" ]
   push:
-    branches: [ "develop", "main" ]
+    branches: [ "develop", "main", "feature/**" ]
 
 jobs:
   build-and-qa-app:
@@ -34,7 +34,7 @@ jobs:
       run: npm run test
 
     - name: 5. Analisis de Calidad de Codigo (SonarCloud)
-      uses: SonarSource/sonarcloud-github-action@v2.3.0
+      uses: SonarSource/sonarcloud-github-action@e44258b109568baa0df60ed515909fc6c72cba92 # v2.3.0
       continue-on-error: true
       with:
         projectBaseDir: src/Proyecto-tani
@@ -99,27 +99,59 @@ jobs:
       uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
     - name: 2. Autenticacion en Azure Container Registry (ACR)
-      uses: azure/docker-login@16198f1f496739665c36142144ef20b70d76bfcd # v2
-      continue-on-error: true
-      with:
-        login-server: ${{ secrets.AZURE_ACR_SERVER }}
-        username: ${{ secrets.AZURE_ACR_USERNAME }}
-        password: ${{ secrets.AZURE_ACR_PASSWORD }}
+      env:
+        AZURE_ACR_SERVER: ${{ secrets.AZURE_ACR_SERVER }}
+        AZURE_ACR_USERNAME: ${{ secrets.AZURE_ACR_USERNAME }}
+        AZURE_ACR_PASSWORD: ${{ secrets.AZURE_ACR_PASSWORD }}
+      run: echo "$AZURE_ACR_PASSWORD" | docker login "$AZURE_ACR_SERVER" --username "$AZURE_ACR_USERNAME" --password-stdin
 
     - name: 3. Construccion de Imagen Docker Multi-etapa
       env:
         AZURE_ACR_SERVER: ${{ secrets.AZURE_ACR_SERVER }}
-      run: docker build -t "$AZURE_ACR_SERVER/tani-app:${{ github.sha }}" .
+      run: |
+        docker build -t "$AZURE_ACR_SERVER/tani-app:${{ github.sha }}" -t "$AZURE_ACR_SERVER/tani-app:latest" .
 
     - name: 4. Publicacion de Imagen en Registro de Azure (Push to ACR)
-      continue-on-error: true
       env:
         AZURE_ACR_SERVER: ${{ secrets.AZURE_ACR_SERVER }}
-      run: docker push "$AZURE_ACR_SERVER/tani-app:${{ github.sha }}"
+      run: |
+        docker push "$AZURE_ACR_SERVER/tani-app:${{ github.sha }}"
+        docker push "$AZURE_ACR_SERVER/tani-app:latest"
 
-    - name: 5. Despliegue Continuo en Azure App Service for Containers
-      uses: azure/webapps-deploy@2b3d01448db41f0f06530f77259168233f23a260 # v2.2.1
+    # Nota: el App Service esta vinculado a tani-app:latest desde el Centro de
+    # Implementacion (webhook de ACR); al publicarse una nueva :latest, Azure
+    # re-descarga la imagen. No se necesita el paso azure/webapps-deploy.
+
+  deploy-to-cpanel-hosting:
+    name: Despliegue Continuo (CD a cPanel Hosting Real)
+    needs: build-and-qa-app
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/develop' || contains(github.ref, 'feature/')
+    runs-on: ubuntu-latest
+    steps:
+    - name: 1. Checkout del Codigo Fuente
+      uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+    # Node 22 obligatorio: el render estatico ejecuta @supabase/realtime-js y
+    # necesita el WebSocket global nativo (inexistente en Node 20).
+    - name: 2. Configurar Node.js (v22)
+      uses: actions/setup-node@60edb5dd545a775178f52524783378180af0d1f8 # v3.8.0
+      with:
+        node-version: '22'
+
+    - name: 3. Compilacion de Aplicacion Web para Produccion
+      run: |
+        cd src/Proyecto-tani
+        npm ci --ignore-scripts
+        ./node_modules/.bin/expo export --platform web
+        node scripts/fix-web-scripts.js
+
+    - name: 4. Despliegue Automatico via FTP a cPanel (aramotech.com/tani)
+      uses: SamKirkland/FTP-Deploy-Action@8e83cea8672e3fbcbb9fdafff34debf6ae4c5f65 # v4.3.5
       continue-on-error: true
       with:
-        app-name: 'connectani-app-service'
-        images: '${{ secrets.AZURE_ACR_SERVER }}/tani-app:${{ github.sha }}'
+        server: ${{ secrets.FTP_SERVER }}
+        username: ${{ secrets.FTP_USERNAME }}
+        password: ${{ secrets.FTP_PASSWORD }}
+        local-dir: ./src/Proyecto-tani/dist/
+        server-dir: /public_html/tani/
+

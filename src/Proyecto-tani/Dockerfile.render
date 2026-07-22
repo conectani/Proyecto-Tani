@@ -1,5 +1,7 @@
 # --- ETAPA 1: CONSTRUCCIÓN (BUILDER) ---
-FROM node:20-alpine AS builder
+# Node 22 es obligatorio: el render estático ejecuta @supabase/realtime-js en Node
+# y necesita el WebSocket global nativo (existe en Node >= 22, no en Node 20).
+FROM node:22.14.0-alpine AS builder
 
 # Configuración de variables de entorno para reducir el uso de memoria durante la construcción
 ENV NODE_OPTIONS="--max-old-space-size=450"
@@ -12,20 +14,20 @@ WORKDIR /app
 COPY package*.json ./
 
 # Instala dependencias con optimizaciones de memoria y red
-RUN npm ci --no-audit --no-fund --preferred-offline && npm cache clean --force
+RUN npm ci --ignore-scripts --no-audit --no-fund --preferred-offline && npm cache clean --force
 
 # Copia el resto del código fuente del proyecto
 COPY . .
 
 # Exporta la compilación estática web de Expo (Metro bundler respetará el maxWorkers limitado en metro.config.js)
-RUN npx expo export --platform web
+RUN ./node_modules/.bin/expo export --platform web
 
 # Corrige el tag de script en los archivos HTML para soportar import.meta (ES Modules)
 RUN node scripts/fix-web-scripts.js
 
 # --- ETAPA 2: PRODUCCIÓN (RUNNER) ---
 # Nginx es sumamente ligero y consume menos de 10 MB de RAM en ejecución
-FROM nginx:1.25-alpine AS runner
+FROM nginx:1.25.4-alpine AS runner
 
 # Copia la compilación estática generada en la etapa builder
 COPY --from=builder /app/dist /usr/share/nginx/html
